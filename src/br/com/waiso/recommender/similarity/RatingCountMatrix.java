@@ -28,12 +28,13 @@
  *   limitations under the License.
  *   
  */
-package br.com.waiso.recommender;
+package br.com.waiso.recommender.similarity;
 
 import java.io.Serializable;
 
 import br.com.waiso.recommender.data.Empresa;
 import br.com.waiso.recommender.data.Produto;
+import br.com.waiso.recommender.data.RatingWaiso;
 
 public class RatingCountMatrix implements Serializable {
 

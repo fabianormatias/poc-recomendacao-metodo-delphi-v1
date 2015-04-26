@@ -28,12 +28,13 @@
  *   limitations under the License.
  *   
  */
-package br.com.waiso.recommender;
+package br.com.waiso.recommender.database;
 
 import java.util.Collection;
 
 import br.com.waiso.recommender.data.Empresa;
 import br.com.waiso.recommender.data.Produto;
+import br.com.waiso.recommender.data.RatingWaiso;
 
 /**
  * Defines service that provides access to all users, items, and ratings.

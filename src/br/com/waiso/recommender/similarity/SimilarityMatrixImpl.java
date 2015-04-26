@@ -34,8 +34,7 @@ import java.util.Arrays;
 
 import org.yooreeka.util.internet.crawling.util.ValueToIndexMapping;
 
-import br.com.waiso.recommender.DatasetWaiso;
-import br.com.waiso.recommender.RatingCountMatrix;
+import br.com.waiso.recommender.database.DatasetWaiso;
 
 public abstract class SimilarityMatrixImpl implements SimilarityMatrix {
 

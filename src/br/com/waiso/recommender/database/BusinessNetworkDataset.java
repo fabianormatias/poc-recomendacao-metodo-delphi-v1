@@ -28,7 +28,7 @@
  *   limitations under the License.
  *   
  */
-package br.com.waiso.recommender;
+package br.com.waiso.recommender.database;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -47,15 +47,17 @@ import java.util.Random;
 
 import br.com.waiso.recommender.data.Empresa;
 import br.com.waiso.recommender.data.Produto;
+import br.com.waiso.recommender.data.RatingWaiso;
 
 /**
  * Dataset implementation that we will use to work with MovieLens data. All data
  * is loaded from three files: empresas, movies (produtos), and ratings.
  */
-public class MovieLensDataset implements DatasetWaiso {
+public class BusinessNetworkDataset implements DatasetWaiso {
 
-	public static final String USERS_FILENAME = "empresas.dat";
-	public static final String ITEMS_FILENAME = "movies.dat";
+	public static final String EMPRESAS_FILENAME = "empresas.dat";
+	public static final String PRODUTOS_FILENAME = "produtos.dat";
+	public static final String COMPRAS_FILENAME = "compras.dat";
 	public static final String RATINGS_FILENAME = "ratings.dat";
 
 	/*
@@ -168,25 +170,25 @@ public class MovieLensDataset implements DatasetWaiso {
 
 	private String name;
 
-	public MovieLensDataset(File empresas, File movies, File ratings) {
+	public BusinessNetworkDataset(File empresas, File movies, File ratings) {
 		name = getClass().getSimpleName() + System.currentTimeMillis();
 		loadData(empresas, movies, ratings, null);
 	}
 
-	public MovieLensDataset(File empresas, File movies, File ratings,
+	public BusinessNetworkDataset(File empresas, File movies, File ratings,
 			int numOfTestRatings) {
 		name = getClass().getSimpleName() + System.currentTimeMillis();
 		this.numberOfTestRatings = numOfTestRatings;
 		loadData(empresas, movies, ratings, null);
 	}
 
-	public MovieLensDataset(String name, File empresas, File movies, File ratings) {
+	public BusinessNetworkDataset(String name, File empresas, File movies, File ratings) {
 
 		this.name = name;
 		loadData(empresas, movies, ratings, null);
 	}
 
-	public MovieLensDataset(String name, File empresas, File produtos,
+	public BusinessNetworkDataset(String name, File empresas, File produtos,
 			List<RatingWaiso> ratings) {
 
 		this.name = name;

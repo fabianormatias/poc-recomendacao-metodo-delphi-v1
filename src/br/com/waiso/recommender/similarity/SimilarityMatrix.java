@@ -30,7 +30,6 @@
  */
 package br.com.waiso.recommender.similarity;
 
-import br.com.waiso.recommender.RatingCountMatrix;
 
 /**
  * Defines similarity matrix. For user-oriented methods it represents

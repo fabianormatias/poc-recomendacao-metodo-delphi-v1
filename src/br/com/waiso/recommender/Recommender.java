@@ -34,6 +34,7 @@ import java.util.List;
 
 import br.com.waiso.recommender.data.Empresa;
 import br.com.waiso.recommender.data.Produto;
+import br.com.waiso.recommender.database.DatasetWaiso;
 import br.com.waiso.recommender.similarity.SimilarEmpresa;
 import br.com.waiso.recommender.similarity.SimilarProduto;
 

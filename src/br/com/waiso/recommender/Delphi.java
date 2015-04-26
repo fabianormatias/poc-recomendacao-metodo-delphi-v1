@@ -41,6 +41,8 @@ import org.yooreeka.config.YooreekaConfigurator;
 
 import br.com.waiso.recommender.data.Empresa;
 import br.com.waiso.recommender.data.Produto;
+import br.com.waiso.recommender.data.RatingWaiso;
+import br.com.waiso.recommender.database.DatasetWaiso;
 import br.com.waiso.recommender.similarity.SimilarEmpresa;
 import br.com.waiso.recommender.similarity.SimilarProduto;
 import br.com.waiso.recommender.similarity.SimilarityMatrix;

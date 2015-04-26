@@ -36,7 +36,7 @@ import org.yooreeka.algos.reco.collab.model.RecommendationType;
 import org.yooreeka.config.YooreekaConfigurator;
 import org.yooreeka.util.P;
 
-import br.com.waiso.recommender.DatasetWaiso;
+import br.com.waiso.recommender.database.DatasetWaiso;
 
 public class SimilarityMatrixRepository {
 

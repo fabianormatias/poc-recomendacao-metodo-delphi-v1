@@ -28,9 +28,8 @@
  *   limitations under the License.
  *   
  */
-package br.com.waiso.recommender;
+package br.com.waiso.recommender.data;
 
-import br.com.waiso.recommender.data.Produto;
 
 /**
  * Generic representation of a rating given by empresa to a product (produto).

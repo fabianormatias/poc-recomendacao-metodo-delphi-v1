@@ -30,9 +30,8 @@
  */
 package br.com.waiso.recommender.similarity;
 
-import br.com.waiso.recommender.DatasetWaiso;
-import br.com.waiso.recommender.RatingCountMatrix;
 import br.com.waiso.recommender.data.Empresa;
+import br.com.waiso.recommender.database.DatasetWaiso;
 
 
 public class EmpresaBasedSimilarity extends SimilarityMatrixImpl {

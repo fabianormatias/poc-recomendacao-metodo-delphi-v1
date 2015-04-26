@@ -9,7 +9,6 @@ import java.util.Map;
 
 import org.yooreeka.algos.reco.collab.model.Content;
 
-import br.com.waiso.recommender.RatingWaiso;
 
 public class Empresa implements Serializable {
 

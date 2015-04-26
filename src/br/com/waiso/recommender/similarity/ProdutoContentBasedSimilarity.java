@@ -32,8 +32,8 @@ package br.com.waiso.recommender.similarity;
 
 import org.yooreeka.util.metrics.CosineSimilarityMeasure;
 
-import br.com.waiso.recommender.DatasetWaiso;
 import br.com.waiso.recommender.data.Produto;
+import br.com.waiso.recommender.database.DatasetWaiso;
 
 /**
  * Similarity between produtos based on the content associated with produtos.

@@ -38,6 +38,7 @@ import java.util.Comparator;
 import java.util.List;
 
 import br.com.waiso.recommender.data.Empresa;
+import br.com.waiso.recommender.database.DatasetWaiso;
 
 /**
  * Represents predicted empresa rating of an produto. Used to return recommendations

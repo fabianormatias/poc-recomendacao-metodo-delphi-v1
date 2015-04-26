@@ -34,9 +34,9 @@ import org.yooreeka.algos.reco.collab.model.Content;
 import org.yooreeka.util.internet.crawling.util.ValueToIndexMapping;
 import org.yooreeka.util.metrics.CosineSimilarityMeasure;
 
-import br.com.waiso.recommender.DatasetWaiso;
 import br.com.waiso.recommender.data.Empresa;
 import br.com.waiso.recommender.data.Produto;
+import br.com.waiso.recommender.database.DatasetWaiso;
 
 /**
  * Similarity between empresas based on the content associated with empresas.
