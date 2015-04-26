@@ -1,4 +1,4 @@
-package br.com.waiso.recommender;
+package br.com.waiso.recommender.data;
 
 public class Compra {
 	

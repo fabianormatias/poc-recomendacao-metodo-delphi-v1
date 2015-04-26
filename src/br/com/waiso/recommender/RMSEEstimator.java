@@ -35,6 +35,9 @@ import java.util.logging.Logger;
 
 import org.yooreeka.config.YooreekaConfigurator;
 
+import br.com.waiso.recommender.data.Empresa;
+import br.com.waiso.recommender.data.Produto;
+
 /**
  * Calculates Root Mean Squared Error for the recommender.
  */

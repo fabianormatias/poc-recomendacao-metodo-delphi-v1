@@ -32,6 +32,9 @@ package br.com.waiso.recommender;
 
 import java.io.Serializable;
 
+import br.com.waiso.recommender.data.Empresa;
+import br.com.waiso.recommender.data.Produto;
+
 public class RatingCountMatrix implements Serializable {
 
 	/**

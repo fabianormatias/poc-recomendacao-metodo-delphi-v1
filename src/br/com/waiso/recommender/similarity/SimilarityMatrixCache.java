@@ -28,7 +28,7 @@
  *   limitations under the License.
  *   
  */
-package br.com.waiso.recommender;
+package br.com.waiso.recommender.similarity;
 
 import java.io.File;
 

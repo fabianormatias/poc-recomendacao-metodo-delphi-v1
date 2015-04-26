@@ -28,11 +28,14 @@
  *   limitations under the License.
  *   
  */
-package br.com.waiso.recommender;
+package br.com.waiso.recommender.similarity;
 
 import java.util.Arrays;
 
 import org.yooreeka.util.internet.crawling.util.ValueToIndexMapping;
+
+import br.com.waiso.recommender.DatasetWaiso;
+import br.com.waiso.recommender.RatingCountMatrix;
 
 public abstract class SimilarityMatrixImpl implements SimilarityMatrix {
 

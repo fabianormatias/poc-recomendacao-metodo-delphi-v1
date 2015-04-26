@@ -32,6 +32,11 @@ package br.com.waiso.recommender;
 
 import java.util.List;
 
+import br.com.waiso.recommender.data.Empresa;
+import br.com.waiso.recommender.data.Produto;
+import br.com.waiso.recommender.similarity.SimilarEmpresa;
+import br.com.waiso.recommender.similarity.SimilarProduto;
+
 /**
  * 
  * @author <a href="mailto:babis@marmanis.com">Babis Marmanis</a>

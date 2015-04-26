@@ -28,13 +28,15 @@
  *   limitations under the License.
  *   
  */
-package br.com.waiso.recommender;
+package br.com.waiso.recommender.similarity;
 
 import java.io.File;
 
 import org.yooreeka.algos.reco.collab.model.RecommendationType;
 import org.yooreeka.config.YooreekaConfigurator;
 import org.yooreeka.util.P;
+
+import br.com.waiso.recommender.DatasetWaiso;
 
 public class SimilarityMatrixRepository {
 

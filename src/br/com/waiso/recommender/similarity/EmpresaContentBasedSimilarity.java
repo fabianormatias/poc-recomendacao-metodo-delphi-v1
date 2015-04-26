@@ -28,45 +28,36 @@
  *   limitations under the License.
  *   
  */
-package br.com.waiso.recommender;
+package br.com.waiso.recommender.similarity;
 
+import org.yooreeka.algos.reco.collab.model.Content;
+import org.yooreeka.util.metrics.CosineSimilarityMeasure;
 
-public class EmpresaBasedSimilarity extends SimilarityMatrixImpl {
+import br.com.waiso.recommender.DatasetWaiso;
+import br.com.waiso.recommender.data.Empresa;
+
+/**
+ * Similarity between empresas based on the content associated with empresas.
+ */
+public class EmpresaContentBasedSimilarity extends SimilarityMatrixImpl {
 
 	/**
-	 * Unique identifier for serialization
+	 * SVUID
 	 */
-	private static final long serialVersionUID = 5741616253320567238L;
+	private static final long serialVersionUID = 5809078434246172835L;
 
-	public EmpresaBasedSimilarity(DatasetWaiso dataSet) {
-
-		this(EmpresaBasedSimilarity.class.getSimpleName(), dataSet, true);
-	}
-
-	public EmpresaBasedSimilarity(String id, DatasetWaiso dataSet,
-			boolean keepRatingCountMatrix) {
+	public EmpresaContentBasedSimilarity(String id, DatasetWaiso ds) {
 		this.id = id;
-		this.keepRatingCountMatrix = keepRatingCountMatrix;
-		this.useObjIdToIndexMapping = dataSet.isIdMappingRequired();
-		calculate(dataSet);
+		this.useObjIdToIndexMapping = ds.isIdMappingRequired();
+		calculate(ds);
 	}
 
-	// here we assume that empresaId and bookId are:
-	// - integers,
-	// - start with 1
-	// - have no gaps in sequence.
-	// Otherwise we would have to have a mapping from empresaId/bookId into index
 	@Override
 	protected void calculate(DatasetWaiso dataSet) {
 
 		int nEmpresas = dataSet.getEmpresaCount();
-		int nRatingValues = 5;
 
 		similarityValues = new double[nEmpresas][nEmpresas];
-
-		if (keepRatingCountMatrix) {
-			ratingCountMatrix = new RatingCountMatrix[nEmpresas][nEmpresas];
-		}
 
 		// if we want to use mapping from empresaId to index then generate
 		// index for every empresaId
@@ -76,8 +67,10 @@ public class EmpresaBasedSimilarity extends SimilarityMatrixImpl {
 			}
 		}
 
-		for (int u = 0; u < nEmpresas; u++) {
+		CosineSimilarityMeasure cosineMeasure = new CosineSimilarityMeasure();
+		String[] allTerms = dataSet.getAllTerms();
 
+		for (int u = 0; u < nEmpresas; u++) {
 			int empresaAId = getObjIdFromIndex(u);
 			Empresa empresaA = dataSet.getEmpresa(empresaAId);
 
@@ -86,28 +79,29 @@ public class EmpresaBasedSimilarity extends SimilarityMatrixImpl {
 				int empresaBId = getObjIdFromIndex(v);
 				Empresa empresaB = dataSet.getEmpresa(empresaBId);
 
-				RatingCountMatrix rcm = new RatingCountMatrix(empresaA, empresaB,
-						nRatingValues);
+				double similarity = 0.0;
 
-				int totalCount = rcm.getTotalCount();
-				int agreementCount = rcm.getAgreementCount();
+				for (Content empresaAContent : empresaA.getEmpresaContent()) {
 
-				if (agreementCount > 0) {
+					double bestCosineSimValue = 0.0;
 
-					similarityValues[u][v] = (double) agreementCount
-							/ (double) totalCount;
-				} else {
-					similarityValues[u][v] = 0.0;
+					for (Content empresaBContent : empresaB.getEmpresaContent()) {
+						double cosineSimValue = cosineMeasure.calculate(
+								empresaAContent.getTermVector(allTerms),
+								empresaBContent.getTermVector(allTerms));
+						bestCosineSimValue = Math.max(bestCosineSimValue,
+								cosineSimValue);
+					}
+
+					similarity += bestCosineSimValue;
 				}
-
-				// For large datasets
-				if (keepRatingCountMatrix) {
-					ratingCountMatrix[u][v] = rcm;
-				}
+				// System.out.println("Similarity empresa[" + u + "][" + v + "]=" +
+				// similarity);
+				similarityValues[u][v] = similarity
+						/ empresaA.getEmpresaContent().size();
 			}
 
 			// for u == v assign 1.
-			// RatingCountMatrix wasn't created for this case
 			similarityValues[u][u] = 1.0;
 		}
 	}

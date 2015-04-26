@@ -28,22 +28,26 @@
  *   limitations under the License.
  *   
  */
-package br.com.waiso.recommender;
+package br.com.waiso.recommender.similarity;
+
+import br.com.waiso.recommender.DatasetWaiso;
+import br.com.waiso.recommender.RatingCountMatrix;
+import br.com.waiso.recommender.data.Empresa;
 
 
-public class ImprovedEmpresaBasedSimilarity extends SimilarityMatrixImpl {
+public class EmpresaBasedSimilarity extends SimilarityMatrixImpl {
 
 	/**
 	 * Unique identifier for serialization
 	 */
-	private static final long serialVersionUID = -4225607333671670946L;
+	private static final long serialVersionUID = 5741616253320567238L;
 
-	public ImprovedEmpresaBasedSimilarity(DatasetWaiso dataSet) {
+	public EmpresaBasedSimilarity(DatasetWaiso dataSet) {
 
-		this(ImprovedEmpresaBasedSimilarity.class.getSimpleName(), dataSet, true);
+		this(EmpresaBasedSimilarity.class.getSimpleName(), dataSet, true);
 	}
 
-	public ImprovedEmpresaBasedSimilarity(String id, DatasetWaiso dataSet,
+	public EmpresaBasedSimilarity(String id, DatasetWaiso dataSet,
 			boolean keepRatingCountMatrix) {
 		this.id = id;
 		this.keepRatingCountMatrix = keepRatingCountMatrix;
@@ -63,6 +67,7 @@ public class ImprovedEmpresaBasedSimilarity extends SimilarityMatrixImpl {
 		int nRatingValues = 5;
 
 		similarityValues = new double[nEmpresas][nEmpresas];
+
 		if (keepRatingCountMatrix) {
 			ratingCountMatrix = new RatingCountMatrix[nEmpresas][nEmpresas];
 		}
@@ -80,7 +85,6 @@ public class ImprovedEmpresaBasedSimilarity extends SimilarityMatrixImpl {
 			int empresaAId = getObjIdFromIndex(u);
 			Empresa empresaA = dataSet.getEmpresa(empresaAId);
 
-			// Notice that we need to consider only the upper triangular matrix
 			for (int v = u + 1; v < nEmpresas; v++) {
 
 				int empresaBId = getObjIdFromIndex(v);
@@ -88,25 +92,14 @@ public class ImprovedEmpresaBasedSimilarity extends SimilarityMatrixImpl {
 
 				RatingCountMatrix rcm = new RatingCountMatrix(empresaA, empresaB,
 						nRatingValues);
+
 				int totalCount = rcm.getTotalCount();
 				int agreementCount = rcm.getAgreementCount();
 
 				if (agreementCount > 0) {
-					double weightedDisagreements = 0.0;
-					int maxBandId = rcm.getMatrix().length - 1;
-					for (int matrixBandId = 1; matrixBandId <= maxBandId; matrixBandId++) {
-						double bandWeight = matrixBandId;
-						weightedDisagreements += bandWeight
-								* rcm.getBandCount(matrixBandId);
-					}
 
-					double similarityValue = 1.0 - (weightedDisagreements / totalCount);
-
-					// normalizing to [0..1]
-					double normalizedSimilarityValue = (similarityValue - 1.0 + maxBandId)
-							/ maxBandId;
-
-					similarityValues[u][v] = normalizedSimilarityValue;
+					similarityValues[u][v] = (double) agreementCount
+							/ (double) totalCount;
 				} else {
 					similarityValues[u][v] = 0.0;
 				}
@@ -115,12 +108,11 @@ public class ImprovedEmpresaBasedSimilarity extends SimilarityMatrixImpl {
 				if (keepRatingCountMatrix) {
 					ratingCountMatrix[u][v] = rcm;
 				}
-
 			}
 
-			// for u == v assign 1
-			similarityValues[u][u] = 1.0; // RatingCountMatrix wasn't
-											// created for this case
+			// for u == v assign 1.
+			// RatingCountMatrix wasn't created for this case
+			similarityValues[u][u] = 1.0;
 		}
 	}
 }

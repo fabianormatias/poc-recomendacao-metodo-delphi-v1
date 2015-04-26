@@ -28,12 +28,14 @@
  *   limitations under the License.
  *   
  */
-package br.com.waiso.recommender;
+package br.com.waiso.recommender.similarity;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+
+import br.com.waiso.recommender.data.Empresa;
 
 /**
  * Utility class that acts as a holder for empresa and similarity value that was

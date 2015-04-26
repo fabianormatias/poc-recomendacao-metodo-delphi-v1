@@ -28,33 +28,48 @@
  *   limitations under the License.
  *   
  */
-package br.com.waiso.recommender;
+package br.com.waiso.recommender.similarity;
 
-import org.yooreeka.algos.reco.collab.model.Content;
-import org.yooreeka.util.metrics.CosineSimilarityMeasure;
+import br.com.waiso.recommender.DatasetWaiso;
+import br.com.waiso.recommender.RatingCountMatrix;
+import br.com.waiso.recommender.data.Empresa;
 
-/**
- * Similarity between empresas based on the content associated with empresas.
- */
-public class EmpresaContentBasedSimilarity extends SimilarityMatrixImpl {
+
+public class ImprovedEmpresaBasedSimilarity extends SimilarityMatrixImpl {
 
 	/**
-	 * SVUID
+	 * Unique identifier for serialization
 	 */
-	private static final long serialVersionUID = 5809078434246172835L;
+	private static final long serialVersionUID = -4225607333671670946L;
 
-	public EmpresaContentBasedSimilarity(String id, DatasetWaiso ds) {
-		this.id = id;
-		this.useObjIdToIndexMapping = ds.isIdMappingRequired();
-		calculate(ds);
+	public ImprovedEmpresaBasedSimilarity(DatasetWaiso dataSet) {
+
+		this(ImprovedEmpresaBasedSimilarity.class.getSimpleName(), dataSet, true);
 	}
 
+	public ImprovedEmpresaBasedSimilarity(String id, DatasetWaiso dataSet,
+			boolean keepRatingCountMatrix) {
+		this.id = id;
+		this.keepRatingCountMatrix = keepRatingCountMatrix;
+		this.useObjIdToIndexMapping = dataSet.isIdMappingRequired();
+		calculate(dataSet);
+	}
+
+	// here we assume that empresaId and bookId are:
+	// - integers,
+	// - start with 1
+	// - have no gaps in sequence.
+	// Otherwise we would have to have a mapping from empresaId/bookId into index
 	@Override
 	protected void calculate(DatasetWaiso dataSet) {
 
 		int nEmpresas = dataSet.getEmpresaCount();
+		int nRatingValues = 5;
 
 		similarityValues = new double[nEmpresas][nEmpresas];
+		if (keepRatingCountMatrix) {
+			ratingCountMatrix = new RatingCountMatrix[nEmpresas][nEmpresas];
+		}
 
 		// if we want to use mapping from empresaId to index then generate
 		// index for every empresaId
@@ -64,42 +79,52 @@ public class EmpresaContentBasedSimilarity extends SimilarityMatrixImpl {
 			}
 		}
 
-		CosineSimilarityMeasure cosineMeasure = new CosineSimilarityMeasure();
-		String[] allTerms = dataSet.getAllTerms();
-
 		for (int u = 0; u < nEmpresas; u++) {
+
 			int empresaAId = getObjIdFromIndex(u);
 			Empresa empresaA = dataSet.getEmpresa(empresaAId);
 
+			// Notice that we need to consider only the upper triangular matrix
 			for (int v = u + 1; v < nEmpresas; v++) {
 
 				int empresaBId = getObjIdFromIndex(v);
 				Empresa empresaB = dataSet.getEmpresa(empresaBId);
 
-				double similarity = 0.0;
+				RatingCountMatrix rcm = new RatingCountMatrix(empresaA, empresaB,
+						nRatingValues);
+				int totalCount = rcm.getTotalCount();
+				int agreementCount = rcm.getAgreementCount();
 
-				for (Content empresaAContent : empresaA.getEmpresaContent()) {
-
-					double bestCosineSimValue = 0.0;
-
-					for (Content empresaBContent : empresaB.getEmpresaContent()) {
-						double cosineSimValue = cosineMeasure.calculate(
-								empresaAContent.getTermVector(allTerms),
-								empresaBContent.getTermVector(allTerms));
-						bestCosineSimValue = Math.max(bestCosineSimValue,
-								cosineSimValue);
+				if (agreementCount > 0) {
+					double weightedDisagreements = 0.0;
+					int maxBandId = rcm.getMatrix().length - 1;
+					for (int matrixBandId = 1; matrixBandId <= maxBandId; matrixBandId++) {
+						double bandWeight = matrixBandId;
+						weightedDisagreements += bandWeight
+								* rcm.getBandCount(matrixBandId);
 					}
 
-					similarity += bestCosineSimValue;
+					double similarityValue = 1.0 - (weightedDisagreements / totalCount);
+
+					// normalizing to [0..1]
+					double normalizedSimilarityValue = (similarityValue - 1.0 + maxBandId)
+							/ maxBandId;
+
+					similarityValues[u][v] = normalizedSimilarityValue;
+				} else {
+					similarityValues[u][v] = 0.0;
 				}
-				// System.out.println("Similarity empresa[" + u + "][" + v + "]=" +
-				// similarity);
-				similarityValues[u][v] = similarity
-						/ empresaA.getEmpresaContent().size();
+
+				// For large datasets
+				if (keepRatingCountMatrix) {
+					ratingCountMatrix[u][v] = rcm;
+				}
+
 			}
 
-			// for u == v assign 1.
-			similarityValues[u][u] = 1.0;
+			// for u == v assign 1
+			similarityValues[u][u] = 1.0; // RatingCountMatrix wasn't
+											// created for this case
 		}
 	}
 }

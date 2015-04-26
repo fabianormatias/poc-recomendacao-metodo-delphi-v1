@@ -1,4 +1,4 @@
-package br.com.waiso.recommender;
+package br.com.waiso.recommender.data;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.yooreeka.algos.reco.collab.model.Content;
+
+import br.com.waiso.recommender.RatingWaiso;
 
 public class Produto implements Serializable {
 	

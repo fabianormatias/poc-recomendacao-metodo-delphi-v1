@@ -28,16 +28,21 @@
  *   limitations under the License.
  *   
  */
-package br.com.waiso.recommender;
+package br.com.waiso.recommender.similarity;
 
-public class ProdutoBasedSimilarity extends SimilarityMatrixImpl {
+import org.yooreeka.algos.reco.collab.model.Dataset;
+import org.yooreeka.algos.reco.collab.model.Item;
+import org.yooreeka.algos.reco.collab.similarity.naive.SimilarityMatrixImpl;
+import org.yooreeka.algos.reco.collab.similarity.util.RatingCountMatrix;
+
+public class ImprovedProdutoBasedSimilarity extends SimilarityMatrixImpl {
 
 	/**
-     * 
-     */
-	private static final long serialVersionUID = 3062035062791168163L;
+	 * Unique identifier for serialization
+	 */
+	private static final long serialVersionUID = -8364129617679022295L;
 
-	public ProdutoBasedSimilarity(String id, DatasetWaiso dataSet,
+	public ImprovedProdutoBasedSimilarity(String id, Dataset dataSet,
 			boolean keepRatingCountMatrix) {
 		this.id = id;
 		this.keepRatingCountMatrix = keepRatingCountMatrix;
@@ -46,21 +51,19 @@ public class ProdutoBasedSimilarity extends SimilarityMatrixImpl {
 	}
 
 	@Override
-	protected void calculate(DatasetWaiso dataSet) {
-
-		int nProdutos = dataSet.getProdutoCount();
+	protected void calculate(Dataset dataSet) {
+		int nItems = dataSet.getItemCount();
 		int nRatingValues = 5;
-
-		similarityValues = new double[nProdutos][nProdutos];
+		similarityValues = new double[nItems][nItems];
 
 		if (keepRatingCountMatrix) {
-			ratingCountMatrix = new RatingCountMatrix[nProdutos][nProdutos];
+			ratingCountMatrix = new RatingCountMatrix[nItems][nItems];
 		}
 
 		// if we want to use mapping from itemId to index then generate
 		// index for every itemId
 		if (useObjIdToIndexMapping) {
-			for (Produto item : dataSet.getProdutos()) {
+			for (Item item : dataSet.getItems()) {
 				idMapping.getIndex(String.valueOf(item.getId()));
 			}
 		}
@@ -68,18 +71,13 @@ public class ProdutoBasedSimilarity extends SimilarityMatrixImpl {
 		int totalCount = 0;
 		int agreementCount = 0;
 
-		for (int u = 0; u < nProdutos; u++) {
-
+		for (int u = 0; u < nItems; u++) {
 			int itemAId = getObjIdFromIndex(u);
-			Produto itemA = dataSet.getProduto(itemAId);
-
+			Item itemA = dataSet.getItem(itemAId);
 			// we only need to calculate elements above the main diagonal.
-			for (int v = u + 1; v < nProdutos; v++) {
-
+			for (int v = u + 1; v < nItems; v++) {
 				int itemBId = getObjIdFromIndex(v);
-
-				Produto itemB = dataSet.getProduto(itemBId);
-
+				Item itemB = dataSet.getItem(itemBId);
 				RatingCountMatrix rcm = new RatingCountMatrix(itemA, itemB,
 						nRatingValues);
 
@@ -87,20 +85,37 @@ public class ProdutoBasedSimilarity extends SimilarityMatrixImpl {
 				agreementCount = rcm.getAgreementCount();
 
 				if (agreementCount > 0) {
-					similarityValues[u][v] = (double) agreementCount
-							/ (double) totalCount;
+					/*
+					 * See ImprovedUserBasedSimilarity class for detailed
+					 * explanation.
+					 */
+					double weightedDisagreements = 0.0;
+					int maxBandId = rcm.getMatrix().length - 1;
+					for (int matrixBandId = 1; matrixBandId <= maxBandId; matrixBandId++) {
+						double bandWeight = matrixBandId;
+						weightedDisagreements += bandWeight
+								* rcm.getBandCount(matrixBandId);
+					}
+
+					double similarityValue = 1.0 - (weightedDisagreements / totalCount);
+
+					// normalizing to [0..1]
+					double normalizedSimilarityValue = (similarityValue - 1.0 + maxBandId)
+							/ maxBandId;
+					similarityValues[u][v] = normalizedSimilarityValue;
 				} else {
 					similarityValues[u][v] = 0.0;
 				}
 
+				// For large datasets
 				if (keepRatingCountMatrix) {
 					ratingCountMatrix[u][v] = rcm;
 				}
 			}
 
 			// for u == v assign 1
+			// ratingCountMatrix wasn't created for this case
 			similarityValues[u][u] = 1.0;
-
 		}
 	}
 }

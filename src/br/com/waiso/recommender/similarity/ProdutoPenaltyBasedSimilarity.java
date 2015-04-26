@@ -28,21 +28,25 @@
  *   limitations under the License.
  *   
  */
-package br.com.waiso.recommender;
+package br.com.waiso.recommender.similarity;
 
-import org.yooreeka.algos.reco.collab.model.Dataset;
-import org.yooreeka.algos.reco.collab.model.Item;
-import org.yooreeka.algos.reco.collab.similarity.naive.SimilarityMatrixImpl;
-import org.yooreeka.algos.reco.collab.similarity.util.RatingCountMatrix;
+import br.com.waiso.recommender.DatasetWaiso;
+import br.com.waiso.recommender.RatingCountMatrix;
+import br.com.waiso.recommender.data.Produto;
 
-public class ImprovedProdutoBasedSimilarity extends SimilarityMatrixImpl {
+public class ProdutoPenaltyBasedSimilarity extends SimilarityMatrixImpl {
 
 	/**
 	 * Unique identifier for serialization
 	 */
-	private static final long serialVersionUID = -8364129617679022295L;
+	private static final long serialVersionUID = -6137735175034641281L;
 
-	public ImprovedProdutoBasedSimilarity(String id, Dataset dataSet,
+	public ProdutoPenaltyBasedSimilarity(DatasetWaiso dataSet) {
+
+		this(ProdutoPenaltyBasedSimilarity.class.getSimpleName(), dataSet, true);
+	}
+
+	public ProdutoPenaltyBasedSimilarity(String id, DatasetWaiso dataSet,
 			boolean keepRatingCountMatrix) {
 		this.id = id;
 		this.keepRatingCountMatrix = keepRatingCountMatrix;
@@ -51,63 +55,97 @@ public class ImprovedProdutoBasedSimilarity extends SimilarityMatrixImpl {
 	}
 
 	@Override
-	protected void calculate(Dataset dataSet) {
-		int nItems = dataSet.getItemCount();
+	protected void calculate(DatasetWaiso dataSet) {
+
+		int nProdutos = dataSet.getProdutoCount();
 		int nRatingValues = 5;
-		similarityValues = new double[nItems][nItems];
+
+		/*
+		 * The penalties distort the scale that we use for similarities
+		 * maxBoundWeight is an auxiliary variable for scaling back to [0,1]
+		 */
+		double scaleFactor = 0.0;
+
+		similarityValues = new double[nProdutos][nProdutos];
 
 		if (keepRatingCountMatrix) {
-			ratingCountMatrix = new RatingCountMatrix[nItems][nItems];
+			ratingCountMatrix = new RatingCountMatrix[nProdutos][nProdutos];
 		}
 
-		// if we want to use mapping from itemId to index then generate
-		// index for every itemId
+		// if we want to use mapping from produtoId to index then generate
+		// index for every produtoId
 		if (useObjIdToIndexMapping) {
-			for (Item item : dataSet.getItems()) {
-				idMapping.getIndex(String.valueOf(item.getId()));
+			for (Produto produto : dataSet.getProdutos()) {
+				idMapping.getIndex(String.valueOf(produto.getId()));
 			}
 		}
 
+		// By using these variables we reduce the number of method calls
+		// inside the double loop.
 		int totalCount = 0;
 		int agreementCount = 0;
 
-		for (int u = 0; u < nItems; u++) {
-			int itemAId = getObjIdFromIndex(u);
-			Item itemA = dataSet.getItem(itemAId);
+		for (int u = 0; u < nProdutos; u++) {
+
+			int produtoAId = getObjIdFromIndex(u);
+			Produto produtoA = dataSet.getProduto(produtoAId);
+
 			// we only need to calculate elements above the main diagonal.
-			for (int v = u + 1; v < nItems; v++) {
-				int itemBId = getObjIdFromIndex(v);
-				Item itemB = dataSet.getItem(itemBId);
-				RatingCountMatrix rcm = new RatingCountMatrix(itemA, itemB,
+			for (int v = u + 1; v < nProdutos; v++) {
+
+				int produtoBId = getObjIdFromIndex(v);
+
+				Produto produtoB = dataSet.getProduto(produtoBId);
+
+				RatingCountMatrix rcm = new RatingCountMatrix(produtoA, produtoB,
 						nRatingValues);
 
 				totalCount = rcm.getTotalCount();
 				agreementCount = rcm.getAgreementCount();
 
 				if (agreementCount > 0) {
+
 					/*
 					 * See ImprovedUserBasedSimilarity class for detailed
 					 * explanation.
 					 */
 					double weightedDisagreements = 0.0;
+
 					int maxBandId = rcm.getMatrix().length - 1;
+
 					for (int matrixBandId = 1; matrixBandId <= maxBandId; matrixBandId++) {
-						double bandWeight = matrixBandId;
+
+						/*
+						 * The following is a heuristic. Can you figure out what
+						 * characteristics are captured in such an expression?
+						 * The numbers 1.8 and 0.4 are arbitrary, however, we
+						 * could define them by solving an optimization problem.
+						 * How would you formulate the problem? How would you
+						 * solve it?
+						 */
+						double bandWeight = 1.8 - Math.exp(1 - matrixBandId);
+						bandWeight = Math.pow(bandWeight, 0.4);
+
+						if (bandWeight > scaleFactor) {
+							scaleFactor = bandWeight;
+						}
+
 						weightedDisagreements += bandWeight
 								* rcm.getBandCount(matrixBandId);
 					}
 
 					double similarityValue = 1.0 - (weightedDisagreements / totalCount);
 
-					// normalizing to [0..1]
-					double normalizedSimilarityValue = (similarityValue - 1.0 + maxBandId)
-							/ maxBandId;
-					similarityValues[u][v] = normalizedSimilarityValue;
+					// w is the upper (negative) bound of the weighted
+					// similarity scale
+					double w = scaleFactor * (totalCount - agreementCount);
+
+					similarityValues[u][v] = (w + similarityValue) / (w + 1);
+
 				} else {
 					similarityValues[u][v] = 0.0;
 				}
 
-				// For large datasets
 				if (keepRatingCountMatrix) {
 					ratingCountMatrix[u][v] = rcm;
 				}
@@ -116,6 +154,8 @@ public class ImprovedProdutoBasedSimilarity extends SimilarityMatrixImpl {
 			// for u == v assign 1
 			// ratingCountMatrix wasn't created for this case
 			similarityValues[u][u] = 1.0;
+
 		}
 	}
+
 }

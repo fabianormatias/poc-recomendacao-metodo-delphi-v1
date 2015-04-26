@@ -28,12 +28,14 @@
  *   limitations under the License.
  *   
  */
-package br.com.waiso.recommender;
+package br.com.waiso.recommender.similarity;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+
+import br.com.waiso.recommender.data.Produto;
 
 /**
  * @author <a href="mailto:babis@marmanis.com">Babis Marmanis</a>

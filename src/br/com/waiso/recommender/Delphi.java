@@ -39,6 +39,13 @@ import java.util.logging.Logger;
 import org.yooreeka.algos.reco.collab.model.RecommendationType;
 import org.yooreeka.config.YooreekaConfigurator;
 
+import br.com.waiso.recommender.data.Empresa;
+import br.com.waiso.recommender.data.Produto;
+import br.com.waiso.recommender.similarity.SimilarEmpresa;
+import br.com.waiso.recommender.similarity.SimilarProduto;
+import br.com.waiso.recommender.similarity.SimilarityMatrix;
+import br.com.waiso.recommender.similarity.SimilarityMatrixRepository;
+
 /**
  * Recommender. Has to be initialized with similarity function and data.
  *

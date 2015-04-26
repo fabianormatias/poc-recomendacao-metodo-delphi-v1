@@ -32,6 +32,9 @@ package br.com.waiso.recommender;
 
 import java.util.Collection;
 
+import br.com.waiso.recommender.data.Empresa;
+import br.com.waiso.recommender.data.Produto;
+
 /**
  * Defines service that provides access to all users, items, and ratings.
  * Recommender and similarity implementations rely on this service to access

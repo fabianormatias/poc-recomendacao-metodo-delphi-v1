@@ -28,9 +28,12 @@
  *   limitations under the License.
  *   
  */
-package br.com.waiso.recommender;
+package br.com.waiso.recommender.similarity;
 
 import org.yooreeka.util.metrics.CosineSimilarityMeasure;
+
+import br.com.waiso.recommender.DatasetWaiso;
+import br.com.waiso.recommender.data.Produto;
 
 /**
  * Similarity between produtos based on the content associated with produtos.
