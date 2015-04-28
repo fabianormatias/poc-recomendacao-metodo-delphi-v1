@@ -25,6 +25,8 @@ public class GenerateDataset {
 			File empresas = new File(ConstantsDatabase.DATABASE_DIR+"empresas.txt");
 			if(!empresas.exists()) {
 				empresas.getParentFile().mkdirs();
+			} else {
+				empresas.delete();
 			}
 			
 			FileWriter wEmpresas = new FileWriter(empresas);
@@ -42,6 +44,8 @@ public class GenerateDataset {
 			File produtos = new File(ConstantsDatabase.DATABASE_DIR+"produtos.txt");
 			if(!produtos.exists()) {
 				produtos.getParentFile().mkdirs();
+			} else {
+				produtos.delete();
 			}
 			
 			FileWriter wProdutos = new FileWriter(produtos);
@@ -63,8 +67,14 @@ public class GenerateDataset {
 			File compras = new File(ConstantsDatabase.DATABASE_DIR+"compras.txt");
 			if(!compras.exists()) {
 				compras.getParentFile().mkdirs();
+			} else {
+				compras.delete();
 			}
 			
+			//Gera as compras viciadas caso  o comprador tem id múltiplo de 5 o vendedor também terá 
+			//e a pontuação neste caso é sempre 5
+			//espera-se como resultado para a busca de uma empresa cujo o id seja múltiplo de 5
+			//esta informação será utilizada posteriormente para avaliar os resultados da recomendação
 			Random r = new Random();
 			FileWriter wCompras = new FileWriter(compras);
 			int produtoCompra = 0;
