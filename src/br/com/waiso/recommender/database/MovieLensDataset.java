@@ -45,6 +45,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import br.com.waiso.recommender.data.Compra;
 import br.com.waiso.recommender.data.Empresa;
 import br.com.waiso.recommender.data.Produto;
 import br.com.waiso.recommender.data.RatingWaiso;
@@ -97,7 +98,7 @@ public class MovieLensDataset implements DatasetWaiso {
 		return new BufferedReader(new FileReader(f));
 	}
 
-	public static List<RatingWaiso> loadRatings(File f) {
+	public static List<RatingWaiso> loadCompras(File f) {
 		List<RatingWaiso> allRatings = new ArrayList<RatingWaiso>();
 
 		BufferedReader reader = null;
@@ -138,7 +139,7 @@ public class MovieLensDataset implements DatasetWaiso {
 	/*
 	 * All produto ratings.
 	 */
-	private List<RatingWaiso> allRatings = new ArrayList<RatingWaiso>();
+	private List<Compra> compras = new ArrayList<Compra>();
 
 	/*
 	 * Map of all empresas.
@@ -155,23 +156,24 @@ public class MovieLensDataset implements DatasetWaiso {
 	 */
 	private int numberOfTestRatings = 0;
 
-	private List<RatingWaiso> testRatings = new ArrayList<RatingWaiso>();
+	private List<Compra> testCompras = new ArrayList<Compra>();
 
 	/*
 	 * Map of produto ratings by produto id.
 	 */
-	private Map<Integer, List<RatingWaiso>> ratingsByProdutoId = new HashMap<Integer, List<RatingWaiso>>();
+	private Map<Integer, List<Compra>> comprasByProdutoId = new HashMap<Integer, List<Compra>>();
 
 	/*
 	 * Map of produto ratings by empresa id.
 	 */
-	Map<Integer, List<RatingWaiso>> ratingsByEmpresaId = new HashMap<Integer, List<RatingWaiso>>();
+	Map<Integer, List<Compra>> compraByCompradorId = new HashMap<Integer, List<Compra>>();
+	Map<Integer, List<Compra>> compraByVendedorId = new HashMap<Integer, List<Compra>>();
 
 	private String name;
 
-	public MovieLensDataset(File empresas, File movies, File ratings) {
+	public MovieLensDataset(File empresas, File produtos, File compras) {
 		name = getClass().getSimpleName() + System.currentTimeMillis();
-		loadData(empresas, movies, ratings, null);
+		loadData(empresas, produtos, compras, null);
 	}
 
 	public MovieLensDataset(File empresas, File movies, File ratings,
@@ -188,10 +190,10 @@ public class MovieLensDataset implements DatasetWaiso {
 	}
 
 	public MovieLensDataset(String name, File empresas, File produtos,
-			List<RatingWaiso> ratings) {
+			List<Compra> compras) {
 
 		this.name = name;
-		loadData(empresas, produtos, null, ratings);
+		loadData(empresas, produtos, null, compras);
 	}
 
 	private void addRatingToMap(Map<Integer, List<RatingWaiso>> map, Integer key,
@@ -205,15 +207,15 @@ public class MovieLensDataset implements DatasetWaiso {
 	}
 
 	private Produto createNewProduto(int produtoId, String name) {
-		List<RatingWaiso> ratings = ratingsByProdutoId.get(produtoId);
-		if (ratings == null) {
-			ratings = new ArrayList<RatingWaiso>();
+		List<Compra> compras = comprasByProdutoId.get(produtoId);
+		if (compras == null) {
+			compras = new ArrayList<Compra>();
 		}
 
-		Produto produto = new Produto(produtoId, name, ratings);
+		Produto produto = new Produto(produtoId, name, compras);
 
 		// establish link between rating and produto
-		for (RatingWaiso r : ratings) {
+		for (Compra r : compras) {
 			r.setProduto(produto);
 		}
 
@@ -276,12 +278,12 @@ public class MovieLensDataset implements DatasetWaiso {
 		return false;
 	}
 
-	private void loadData(File empresasFile, File produtosFile, File ratingsFile,
-			List<RatingWaiso> ratings) {
+	private void loadData(File empresasFile, File produtosFile, File compraFile,
+			List<Compra> ratings) {
 		try {
 			/* Load all available ratings */
 			if (ratings == null) {
-				allRatings = loadRatings(ratingsFile);
+				allRatings = loadCompras(ratings);
 			} else {
 				allRatings = ratings;
 			}
@@ -379,6 +381,18 @@ public class MovieLensDataset implements DatasetWaiso {
 			RatingWaiso rating = allRatings.remove(randomIndex);
 			testRatings.add(rating);
 		}
+	}
+
+	@Override
+	public double getAverageProdutoRatingByComprador(int itemId) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public double getAverageProdutoRatingByVendedor(int itemId) {
+		// TODO Auto-generated method stub
+		return 0;
 	}
 
 }

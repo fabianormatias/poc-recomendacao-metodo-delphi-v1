@@ -113,11 +113,13 @@ public class Delphi implements Recommender {
 
 	private double estimateProdutoBasedRating(Empresa user, Produto produto) {
 
-		double estimatedRating;
+		double estimatedRatingByComprador;
+		double estimatedRatingByVendedor;
 
 		if (produto != null && user != null) {
 
-			estimatedRating = produto.getAverageRating();
+			estimatedRatingByComprador = produto.getAverageRatingByComprador();
+//			estimatedRatingByVendedor = produto.getAverageRatingByVendedor();
 
 		} else {
 			if (produto == null && user == null) {

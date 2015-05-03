@@ -57,7 +57,15 @@ public interface DatasetWaiso {
 	 * @param itemId
 	 * @return
 	 */
-	public double getAverageProdutoRating(int itemId);
+	public double getAverageProdutoRatingByComprador(int itemId);
+	
+	/**
+	 * Provides the average rating for this item
+	 * 
+	 * @param itemId
+	 * @return
+	 */
+	public double getAverageProdutoRatingByVendedor(int itemId);
 
 	/**
 	 * Provides the average rating for this user
@@ -118,14 +126,30 @@ public interface DatasetWaiso {
 	 *            user id.
 	 * @return user.
 	 */
-	public Empresa getEmpresa(Integer userId);
+	public Empresa getComprador(Integer compradorId);
+	
+	/**
+	 * Retrieves a specific user.
+	 * 
+	 * @param userId
+	 *            user id.
+	 * @return user.
+	 */
+	public Empresa getVendedor(Integer vendedorId);
 
 	/**
 	 * Total number of all available users.
 	 * 
 	 * @return number of users.
 	 */
-	public int getEmpresaCount();
+	public int getCompradorCount();
+	
+	/**
+	 * Total number of all available users.
+	 * 
+	 * @return number of users.
+	 */
+	public int getVendedorCount();
 
 	/**
 	 * Retrieves all users.

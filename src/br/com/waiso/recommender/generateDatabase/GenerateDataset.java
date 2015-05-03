@@ -37,7 +37,7 @@ public class GenerateDataset {
 				buff.append(i);
 				buff.append("\n");
 			}
-//			System.out.println(buff.toString());
+			System.out.println(buff.toString());
 //			wEmpresas.write("");
 			
 			buff = new StringBuffer();
@@ -60,7 +60,7 @@ public class GenerateDataset {
 					idProduto++;
 				}
 			}
-//			System.out.println(buff.toString());
+			System.out.println(buff.toString());
 //			wProdutos.write("");
 			
 			buff = new StringBuffer();
@@ -105,7 +105,7 @@ public class GenerateDataset {
 				buff.append(pontuacao);
 				buff.append("\n");
 			}
-//			System.out.println(buff.toString());
+			System.out.println(buff.toString());
 //			wCompras.write("");
 			
 		} catch (IOException e) {

@@ -45,6 +45,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import br.com.waiso.recommender.data.Compra;
 import br.com.waiso.recommender.data.Empresa;
 import br.com.waiso.recommender.data.Produto;
 import br.com.waiso.recommender.data.RatingWaiso;
@@ -58,7 +59,6 @@ public class BusinessNetworkDataset implements DatasetWaiso {
 	public static final String EMPRESAS_FILENAME = "empresas.dat";
 	public static final String PRODUTOS_FILENAME = "produtos.dat";
 	public static final String COMPRAS_FILENAME = "compras.dat";
-	public static final String RATINGS_FILENAME = "ratings.dat";
 
 	/*
 	 * Delimiter that is used by MovieLens data files.
@@ -139,12 +139,17 @@ public class BusinessNetworkDataset implements DatasetWaiso {
 	/*
 	 * All produto ratings.
 	 */
-	private List<RatingWaiso> allRatings = new ArrayList<RatingWaiso>();
+	private List<RatingWaiso> allCompras = new ArrayList<RatingWaiso>();
 
 	/*
 	 * Map of all empresas.
 	 */
-	private Map<Integer, Empresa> allEmpresas = new HashMap<Integer, Empresa>();
+	private Map<Integer, Empresa> allVendedores = new HashMap<Integer, Empresa>();
+	
+	/*
+	 * Map of all empresas.
+	 */
+	private Map<Integer, Empresa> allCompradores = new HashMap<Integer, Empresa>();
 
 	/*
 	 * Map of all produtos.
@@ -161,25 +166,27 @@ public class BusinessNetworkDataset implements DatasetWaiso {
 	/*
 	 * Map of produto ratings by produto id.
 	 */
-	private Map<Integer, List<RatingWaiso>> ratingsByProdutoId = new HashMap<Integer, List<RatingWaiso>>();
+	private Map<Integer, List<Compra>> comprasByProdutoId = new HashMap<Integer, List<Compra>>();
 
 	/*
+	 * 
 	 * Map of produto ratings by empresa id.
 	 */
-	Map<Integer, List<RatingWaiso>> ratingsByEmpresaId = new HashMap<Integer, List<RatingWaiso>>();
+	Map<Integer, List<Compra>> comprasByVendendorId = new HashMap<Integer, List<Compra>>();
+	Map<Integer, List<Compra>> comprasByCompradorId = new HashMap<Integer, List<Compra>>();
 
 	private String name;
 
-	public BusinessNetworkDataset(File empresas, File movies, File ratings) {
+	public BusinessNetworkDataset(File empresas, File produtos, File compras) {
 		name = getClass().getSimpleName() + System.currentTimeMillis();
-		loadData(empresas, movies, ratings, null);
+		loadData(empresas, produtos, compras, null);
 	}
 
-	public BusinessNetworkDataset(File empresas, File movies, File ratings,
+	public BusinessNetworkDataset(File empresas, File produtos, File compras,
 			int numOfTestRatings) {
 		name = getClass().getSimpleName() + System.currentTimeMillis();
 		this.numberOfTestRatings = numOfTestRatings;
-		loadData(empresas, movies, ratings, null);
+		loadData(empresas, produtos, compras, null);
 	}
 
 	public BusinessNetworkDataset(String name, File empresas, File movies, File ratings) {
@@ -206,16 +213,16 @@ public class BusinessNetworkDataset implements DatasetWaiso {
 	}
 
 	private Produto createNewProduto(int produtoId, String name) {
-		List<RatingWaiso> ratings = ratingsByProdutoId.get(produtoId);
-		if (ratings == null) {
-			ratings = new ArrayList<RatingWaiso>();
+		List<Compra> compras = comprasByProdutoId.get(produtoId);
+		if (compras == null) {
+			compras = new ArrayList<Compra>();
 		}
 
-		Produto produto = new Produto(produtoId, name, ratings);
+		Produto produto = new Produto(produtoId, name, compras);
 
 		// establish link between rating and produto
-		for (RatingWaiso r : ratings) {
-			r.setProduto(produto);
+		for (Compra c : compras) {
+			c.setProduto(produto);
 		}
 
 		return produto;
@@ -225,8 +232,12 @@ public class BusinessNetworkDataset implements DatasetWaiso {
 		return new String[0];
 	}
 
-	public double getAverageProdutoRating(int produtoId) {
-		return getProduto(produtoId).getAverageRating();
+	public double getAverageProdutoRatingByComprador(int produtoId) {
+		return getProduto(produtoId).getAverageRatingByComprador();
+	}
+	
+	public double getAverageProdutoRatingByVendedor(int produtoId) {
+		return getProduto(produtoId).getAverageRatingByVendedor();
 	}
 
 	public double getAverageEmpresaRating(int empresaId) {
@@ -250,27 +261,39 @@ public class BusinessNetworkDataset implements DatasetWaiso {
 	}
 
 	public Collection<RatingWaiso> getRatings() {
-		return this.allRatings;
+		return this.allCompras;
 	}
 
 	public int getRatingsCount() {
-		return allRatings.size();
+		return allCompras.size();
 	}
 
 	public Collection<RatingWaiso> getTestRatings() {
 		return this.testRatings;
 	}
 
-	public Empresa getEmpresa(Integer empresaId) {
-		return allEmpresas.get(empresaId);
+	public Empresa getComprador(Integer compradorId) {
+		return allCompradores.get(compradorId);
+	}
+	
+	public Empresa getVendedor(Integer vendedorId) {
+		return allVendedores.get(vendedorId);
 	}
 
-	public int getEmpresaCount() {
-		return allEmpresas.size();
+	public int getVendedorCount() {
+		return allVendedores.size();
+	}
+	
+	public int getCompradorCount() {
+		return allCompradores.size();
 	}
 
-	public Collection<Empresa> getEmpresas() {
-		return allEmpresas.values();
+	public Collection<Empresa> getVendedores() {
+		return allVendedores.values();
+	}
+	
+	public Collection<Empresa> getCompradores() {
+		return allCompradores.values();
 	}
 
 	public boolean isIdMappingRequired() {
@@ -282,17 +305,17 @@ public class BusinessNetworkDataset implements DatasetWaiso {
 		try {
 			/* Load all available ratings */
 			if (ratings == null) {
-				allRatings = loadRatings(ratingsFile);
+				allCompras = loadRatings(ratingsFile);
 			} else {
-				allRatings = ratings;
+				allCompras = ratings;
 			}
 
 			/* Exclude ratings if needed */
 			withholdRatings();
 
 			/* build maps that provide access to ratings by empresaId or produtoId */
-			for (RatingWaiso rating : allRatings) {
-				addRatingToMap(ratingsByProdutoId, rating.getProdutoId(), rating);
+			for (RatingWaiso rating : allCompras) {
+				addRatingToMap(comprasByProdutoId, rating.getProdutoId(), rating);
 				addRatingToMap(ratingsByEmpresaId, rating.getEmpresaId(), rating);
 			}
 			/*
@@ -376,8 +399,8 @@ public class BusinessNetworkDataset implements DatasetWaiso {
 	private void withholdRatings() {
 		Random rnd = new Random();
 		while (testRatings.size() < this.numberOfTestRatings) {
-			int randomIndex = rnd.nextInt(allRatings.size());
-			RatingWaiso rating = allRatings.remove(randomIndex);
+			int randomIndex = rnd.nextInt(allCompras.size());
+			RatingWaiso rating = allCompras.remove(randomIndex);
 			testRatings.add(rating);
 		}
 	}
