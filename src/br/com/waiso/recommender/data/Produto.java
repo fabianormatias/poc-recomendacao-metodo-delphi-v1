@@ -127,10 +127,8 @@ public class Produto implements Serializable {
 	private double getAvarageRating(Map<Integer, Compra> compras) {
 		double allRatingsSum = 0.0;
 		Collection<Compra> allCompras = compras.values();
-		RatingWaiso rating = null; 
 		for (Compra compra : allCompras) {
-			rating = compra.getPontuacao();
-			allRatingsSum += rating.getRating();
+			allRatingsSum += compra.getPontuacao();
 		}
 		// use 2.5 if there are no ratings.
 		return allCompras.size() > 0 ? allRatingsSum
@@ -169,7 +167,7 @@ public class Produto implements Serializable {
 	private double[] getComprasForProdutoList(Integer[] empresasIds, boolean compradores) {
 		double[] ratings = new double[empresasIds.length];
 		for (int i = 0, n = empresasIds.length; i < n; i++) {
-			RatingWaiso r = null;
+			Integer r = 0;
 			if(compradores) {
 				Compra c = getCompradorCompra(empresasIds[i]);
 				r = c.getPontuacao();
@@ -183,7 +181,7 @@ public class Produto implements Serializable {
 								+ "empresaId=" + empresasIds[i] + ", produtoId="
 								+ getId());
 			}
-			ratings[i] = r.getRating();
+			ratings[i] = r;
 		}
 		return ratings;
 	}

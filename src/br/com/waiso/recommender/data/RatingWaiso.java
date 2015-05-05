@@ -41,88 +41,22 @@ public class RatingWaiso implements java.io.Serializable {
 	 */
 	private static final long serialVersionUID = 1438346522502387789L;
 
-	protected Produto produto;
-
-	private int empresaId;
-	private int produtoId;
 	private int rating;
 
-	public RatingWaiso(int empresaId, int bookId, int rating) {
-		this.empresaId = empresaId;
-		this.produtoId = bookId;
+	public RatingWaiso(int rating) {
 		this.rating = rating;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		final RatingWaiso other = (RatingWaiso) obj;
-		if (produtoId != other.produtoId)
-			return false;
-		if (rating != other.rating)
-			return false;
-		if (empresaId != other.empresaId)
-			return false;
-		return true;
-	}
-
-	/**
-	 * @return the produto
-	 */
-	public Produto getProduto() {
-		return produto;
-	}
-
-	public int getProdutoId() {
-		return produtoId;
 	}
 
 	public int getRating() {
 		return rating;
 	}
 
-	public int getEmpresaId() {
-		return empresaId;
-	}
-
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + produtoId;
-		result = prime * result + rating;
-		result = prime * result + empresaId;
-		return result;
-	}
-
-	/**
-	 * @param produto
-	 *            the produto to set
-	 */
-	public void setProduto(Produto produto) {
-		this.produto = produto;
-	}
-
-	public void setProdutoId(int bookId) {
-		this.produtoId = bookId;
-	}
-
 	public void setRating(int rating) {
 		this.rating = rating;
 	}
 
-	public void setEmpresaId(int empresaId) {
-		this.empresaId = empresaId;
-	}
-
 	@Override
 	public String toString() {
-		return this.getClass().getSimpleName() + "[empresaId: " + empresaId
-				+ ", produtoId: " + produtoId + ", rating: " + rating + "]";
+		return this.getClass().getSimpleName() + "[rating: " + rating + "]";
 	}
 }

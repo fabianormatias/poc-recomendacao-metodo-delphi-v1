@@ -32,9 +32,9 @@ package br.com.waiso.recommender.database;
 
 import java.util.Collection;
 
+import br.com.waiso.recommender.data.Compra;
 import br.com.waiso.recommender.data.Empresa;
 import br.com.waiso.recommender.data.Produto;
-import br.com.waiso.recommender.data.RatingWaiso;
 
 /**
  * Defines service that provides access to all users, items, and ratings.
@@ -73,7 +73,15 @@ public interface DatasetWaiso {
 	 * @param userId
 	 * @return
 	 */
-	public double getAverageEmpresaRating(int userId);
+	public double getAverageCompradorRating(int compradorId);
+	
+	/**
+	 * Provides the average rating for this user
+	 * 
+	 * @param userId
+	 * @return
+	 */
+	public double getAverageVendedorRating(int vendedorId);
 
 	/**
 	 * Retrieves a specific item.
@@ -110,14 +118,14 @@ public interface DatasetWaiso {
 	 * 
 	 * @return collection of ratings.
 	 */
-	public Collection<RatingWaiso> getRatings();
+	public Collection<Compra> getCompras();
 
 	/**
 	 * Total number of all available item ratings.
 	 * 
 	 * @return number of item ratings by users.
 	 */
-	public int getRatingsCount();
+	public int getComprasCount();
 
 	/**
 	 * Retrieves a specific user.
@@ -150,13 +158,6 @@ public interface DatasetWaiso {
 	 * @return number of users.
 	 */
 	public int getVendedorCount();
-
-	/**
-	 * Retrieves all users.
-	 * 
-	 * @return collection of users.
-	 */
-	public Collection<Empresa> getEmpresas();
 
 	/**
 	 * Provides information about user and item ids returned by this dataset.

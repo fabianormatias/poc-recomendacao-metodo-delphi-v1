@@ -21,61 +21,76 @@ public class Empresa implements Serializable {
 	 * Utility method to extract item ids that are shared between empresa A and
 	 * empresa B.
 	 */
-	public static Integer[] getSharedProdutos(Empresa x, Empresa y) {
-		List<Integer> sharedProdutos = new ArrayList<Integer>();
-		for (RatingWaiso r : x.getAllRatings()) {
-			if (y.getProdutoRating(r.getProdutoId()) != null) {
-				sharedProdutos.add(r.getProdutoId());
+	public static Integer[] getSharedProdutosComprados(Empresa x, Empresa y) {
+		List<Integer> sharedProdutosComprados = new ArrayList<Integer>();
+		for (Compra c : x.getAllCompras()) {
+			if (y.getProdutoCompra(c.getProdutoId()) != null) {
+				sharedProdutosComprados.add(c.getProdutoId());
 			}
 		}
-		return sharedProdutos.toArray(new Integer[sharedProdutos.size()]);
+		return sharedProdutosComprados.toArray(new Integer[sharedProdutosComprados.size()]);
 	}
+	
+	/**
+	 * Utility method to extract item ids that are shared between empresa A and
+	 * empresa B.
+	 */
+	public static Integer[] getSharedProdutosVendidos(Empresa x, Empresa y) {
+		List<Integer> sharedProdutosVendidos = new ArrayList<Integer>();
+		for (Compra r : x.getAllCompras()) {
+			if (y.getProdutoCompra(r.getProdutoId()) != null) {
+				sharedProdutosVendidos.add(r.getProdutoId());
+			}
+		}
+		return sharedProdutosVendidos.toArray(new Integer[sharedProdutosVendidos.size()]);
+	}
+	
 	int id;
 
 	String name;
 
-	protected Map<Integer, RatingWaiso> ratingsByProdutoId;
+	protected Map<Integer, Compra> comprasByProdutoId;
 
 	private List<Content> empresaContent = new ArrayList<Content>();
 
 	public Empresa(int id) {
-		this(id, String.valueOf(id), new ArrayList<RatingWaiso>(3));
+		this(id, String.valueOf(id), new ArrayList<Compra>(3));
 	}
 
-	public Empresa(int id, List<RatingWaiso> ratings) {
-		this(id, String.valueOf(id), ratings);
+	public Empresa(int id, List<Compra> compras) {
+		this(id, String.valueOf(id), compras);
 	}
 
 	public Empresa(int id, String name) {
-		this(id, name, new ArrayList<RatingWaiso>(3));
+		this(id, name, new ArrayList<Compra>(3));
 	}
 
-	public Empresa(int id, String name, List<RatingWaiso> ratings) {
+	public Empresa(int id, String name, List<Compra> compras) {
 		this.id = id;
 		this.name = name;
-		ratingsByProdutoId = new HashMap<Integer, RatingWaiso>(ratings.size());
-		for (RatingWaiso r : ratings) {
-			ratingsByProdutoId.put(r.getProdutoId(), r);
+		comprasByProdutoId = new HashMap<Integer, Compra>(compras.size());
+		for (Compra c : compras) {
+			comprasByProdutoId.put(c.getProdutoId(), c);
 		}
 	}
 
-	public void addRating(RatingWaiso rating) {
-		ratingsByProdutoId.put(rating.getProdutoId(), rating);
+	public void addRating(Compra compra) {
+		comprasByProdutoId.put(compra.getProdutoId(), compra);
 	}
 
 	public void addEmpresaContent(Content content) {
 		empresaContent.add(content);
 	}
 
-	public Collection<RatingWaiso> getAllRatings() {
-		return ratingsByProdutoId.values();
+	public Collection<Compra> getAllCompras() {
+		return comprasByProdutoId.values();
 	}
 
 	public double getAverageRating() {
 		double allRatingsSum = 0.0;
-		Collection<RatingWaiso> allEmpresaRatings = getAllRatings();
-		for (RatingWaiso rating : allEmpresaRatings) {
-			allRatingsSum += rating.getRating();
+		Collection<Compra> allEmpresaRatings = getAllCompras();
+		for (Compra compra : allEmpresaRatings) {
+			allRatingsSum += compra.getPontuacao();
 		}
 		return allEmpresaRatings.size() > 0 ? allRatingsSum
 				/ allEmpresaRatings.size() : 2.5;
@@ -85,8 +100,8 @@ public class Empresa implements Serializable {
 		return id;
 	}
 
-	public RatingWaiso getProdutoRating(Integer produtoId) {
-		return ratingsByProdutoId.get(produtoId);
+	public Compra getProdutoCompra(Integer produtoId) {
+		return comprasByProdutoId.get(produtoId);
 	}
 
 	public String getName() {
@@ -99,13 +114,13 @@ public class Empresa implements Serializable {
 	public double[] getRatingsForProdutoList(Integer[] produtoIds) {
 		double[] ratings = new double[produtoIds.length];
 		for (int i = 0, n = produtoIds.length; i < n; i++) {
-			RatingWaiso r = getProdutoRating(produtoIds[i]);
-			if (r == null) {
+			Compra c = getProdutoCompra(produtoIds[i]);
+			if (c == null) {
 				throw new IllegalArgumentException(
 						"Empresa doesn't have specified item id (" + "empresaId="
 								+ getId() + ", itemId=" + produtoIds[i]);
 			}
-			ratings[i] = r.getRating();
+			ratings[i] = c.getPontuacao();
 		}
 		return ratings;
 	}
@@ -125,17 +140,17 @@ public class Empresa implements Serializable {
 		return matchedContent;
 	}
 
-	public void setRatings(List<RatingWaiso> ratings) {
+	public void setRatings(List<Compra> compras) {
 		// Initialize or clean up
-		if (ratingsByProdutoId == null) {
-			ratingsByProdutoId = new HashMap<Integer, RatingWaiso>(ratings.size());
+		if (comprasByProdutoId == null) {
+			comprasByProdutoId = new HashMap<Integer, Compra>(compras.size());
 		} else {
-			ratingsByProdutoId.clear();
+			comprasByProdutoId.clear();
 		}
 
 		// Load the ratings
-		for (RatingWaiso r : ratings) {
-			ratingsByProdutoId.put(r.getProdutoId(), r);
+		for (Compra c : compras) {
+			comprasByProdutoId.put(c.getProdutoId(), c);
 		}
 	}
 
