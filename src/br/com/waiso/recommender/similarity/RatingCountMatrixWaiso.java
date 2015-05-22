@@ -28,61 +28,61 @@
  *   limitations under the License.
  *   
  */
-package br.com.waiso.recommender;
+package br.com.waiso.recommender.similarity;
 
-import java.util.List;
+import java.io.Serializable;
+import java.util.Collection;
 
+import br.com.waiso.recommender.data.Compra;
 import br.com.waiso.recommender.data.Empresa;
 import br.com.waiso.recommender.data.Produto;
-import br.com.waiso.recommender.database.DatasetWaiso;
-import br.com.waiso.recommender.similarity.SimilarEmpresa;
-import br.com.waiso.recommender.similarity.SimilarProduto;
+import br.com.waiso.recommender.data.RatingWaiso;
 
-/**
- * 
- * @author <a href="mailto:babis@marmanis.com">Babis Marmanis</a>
- *
- */
-public interface Recommender {
-
-	public SimilarProduto[] findSimilarProdutos(Produto item);
-
-	public SimilarProduto[] findSimilarProdutos(Produto item, int topN);
-
-	// Similarities
-	public SimilarEmpresa[] findSimilarEmpresas(Empresa empresa);
-
-	public SimilarEmpresa[] findSimilarEmpresas(Empresa empresa, int topN);
-
-	// Auxiliary
-	public DatasetWaiso getDataset();
-
-	public double getSimilarityThreshold();
-
-	public double predictBasedOnProdutoAverage(Produto item);
-
-	public double predictBasedOnEmpresaAverage(Empresa empresa);
-
-	// Predictions
-	public double predictRating(Empresa empresa, Produto item);
+public class RatingCountMatrixWaiso implements Serializable {
 
 	/**
-	 * Returns recommendations for the empresa.
-	 * 
-	 * @param empresa
-	 * @return recommended items with predicted ratings.
+	 * Unique identifier for serialization
 	 */
-	public List<PredictedProdutoRating> recommend(Empresa empresa);
+	private static final long serialVersionUID = -8216800040843757769L;
 
-	/**
-	 * Returns top N recommendations for the empresa.
-	 * 
-	 * @param empresa
-	 * @param topN
-	 *            number of top recommendations to return.
-	 * @return recommended items with predicted ratings.
-	 */
-	public List<PredictedProdutoRating> recommend(Empresa empresa, int topN);
+	protected int matrix[][] = null;
 
-	public void setSimilarityThreshold(double similarityThreshold);
+	public int getAgreementCount() {
+		int ratingCount = 0;
+		for (int i = 0, n = matrix.length; i < n; i++) {
+			ratingCount += matrix[i][i];
+		}
+		return ratingCount;
+	}
+
+	public int getBandCount(int bandId) {
+		int bandCount = 0;
+		for (int i = 0, n = matrix.length; (i + bandId) < n; i++) {
+			bandCount += matrix[i][i + bandId];
+			bandCount += matrix[i + bandId][i];
+		}
+		return bandCount;
+	}
+
+	public int[][] getMatrix() {
+		return matrix;
+	}
+
+	public int getTotalCount() {
+
+		int ratingCount = 0;
+		int n = matrix.length;
+
+		for (int i = 0; i < n; i++) {
+			for (int j = 0; j < n; j++) {
+				ratingCount += matrix[i][j];
+			}
+		}
+		return ratingCount;
+	}
+
+	protected void init(int nSize) {
+		// starting point - all elements are zero
+		matrix = new int[nSize][nSize];
+	}
 }

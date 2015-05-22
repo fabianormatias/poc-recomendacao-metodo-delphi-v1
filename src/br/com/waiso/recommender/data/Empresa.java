@@ -23,8 +23,8 @@ public class Empresa implements Serializable {
 	 */
 	public static Integer[] getSharedProdutosComprados(Empresa x, Empresa y) {
 		List<Integer> sharedProdutosComprados = new ArrayList<Integer>();
-		for (Compra c : x.getAllCompras()) {
-			if (y.getProdutoCompra(c.getProdutoId()) != null) {
+		for (Compra c : x.getAllComprasCompra()) {
+			if (y.getProdutoCompraByCompra(c.getProdutoId()) != null) {
 				sharedProdutosComprados.add(c.getProdutoId());
 			}
 		}
@@ -37,8 +37,8 @@ public class Empresa implements Serializable {
 	 */
 	public static Integer[] getSharedProdutosVendidos(Empresa x, Empresa y) {
 		List<Integer> sharedProdutosVendidos = new ArrayList<Integer>();
-		for (Compra r : x.getAllCompras()) {
-			if (y.getProdutoCompra(r.getProdutoId()) != null) {
+		for (Compra r : x.getAllComprasVenda()) {
+			if (y.getProdutoCompraByVenda(r.getProdutoId()) != null) {
 				sharedProdutosVendidos.add(r.getProdutoId());
 			}
 		}
@@ -49,46 +49,66 @@ public class Empresa implements Serializable {
 
 	String name;
 
-	protected Map<Integer, Compra> comprasByProdutoId;
-
+	protected Map<Integer, Compra> comprasByProdutoVendidoId;
+	protected Map<Integer, Compra> comprasByProdutoCompradoId;
+	
 	private List<Content> empresaContent = new ArrayList<Content>();
 
-	public Empresa(int id) {
-		this(id, String.valueOf(id), new ArrayList<Compra>(3));
+	public Empresa(int id, boolean comprador) {
+		this(id, String.valueOf(id), new ArrayList<Compra>(3), comprador);
 	}
 
-	public Empresa(int id, List<Compra> compras) {
-		this(id, String.valueOf(id), compras);
+	public Empresa(int id, List<Compra> compras, boolean comprador) {
+		this(id, String.valueOf(id), compras, comprador);
 	}
 
-	public Empresa(int id, String name) {
-		this(id, name, new ArrayList<Compra>(3));
+	public Empresa(int id, String name, boolean comprador) {
+		this(id, name, new ArrayList<Compra>(3), comprador);
 	}
 
-	public Empresa(int id, String name, List<Compra> compras) {
+	public Empresa(int id, String name, List<Compra> compras, boolean comprador) {
 		this.id = id;
 		this.name = name;
-		comprasByProdutoId = new HashMap<Integer, Compra>(compras.size());
-		for (Compra c : compras) {
-			comprasByProdutoId.put(c.getProdutoId(), c);
+		if(comprador) {
+			comprasByProdutoCompradoId = new HashMap<Integer, Compra>(compras.size());
+			for (Compra c : compras) {
+				comprasByProdutoCompradoId.put(c.getProdutoId(), c);
+			}
+		} else {
+			comprasByProdutoVendidoId = new HashMap<Integer, Compra>(compras.size());
+			for (Compra c : compras) {
+				comprasByProdutoVendidoId.put(c.getProdutoId(), c);
+			}
 		}
 	}
 
-	public void addRating(Compra compra) {
-		comprasByProdutoId.put(compra.getProdutoId(), compra);
+	public void addCompraComprado(Compra compra) {
+		comprasByProdutoCompradoId.put(compra.getProdutoId(), compra);
 	}
 
 	public void addEmpresaContent(Content content) {
 		empresaContent.add(content);
 	}
 
-	public Collection<Compra> getAllCompras() {
-		return comprasByProdutoId.values();
+	public Collection<Compra> getAllComprasCompra() {
+		return comprasByProdutoCompradoId.values();
+	}
+	
+	public Collection<Compra> getAllComprasVenda() {
+		return comprasByProdutoVendidoId.values();
 	}
 
-	public double getAverageRating() {
+	public double getAverageRatingByCompra() {
+		return  getAverageRating(getAllComprasCompra());
+	}
+	
+	public double getAverageRatingByVenda() {
+		return  getAverageRating(getAllComprasVenda());
+	}
+	
+	private double getAverageRating(Collection<Compra> allCompras) {
 		double allRatingsSum = 0.0;
-		Collection<Compra> allEmpresaRatings = getAllCompras();
+		Collection<Compra> allEmpresaRatings = allCompras;
 		for (Compra compra : allEmpresaRatings) {
 			allRatingsSum += compra.getPontuacao();
 		}
@@ -100,21 +120,39 @@ public class Empresa implements Serializable {
 		return id;
 	}
 
-	public Compra getProdutoCompra(Integer produtoId) {
-		return comprasByProdutoId.get(produtoId);
+	public Compra getProdutoCompraByCompra(Integer produtoId) {
+		return comprasByProdutoCompradoId.get(produtoId);
+	}
+	
+	public Compra getProdutoCompraByVenda(Integer produtoId) {
+		return comprasByProdutoVendidoId.get(produtoId);
 	}
 
 	public String getName() {
 		return name;
 	}
-
+	
 	/*
 	 * Utility method to extract array of ratings based on array of item ids.
 	 */
-	public double[] getRatingsForProdutoList(Integer[] produtoIds) {
+	public double[] getRatingsForProdutoVendaList(Integer[] produtoIds) {
+		return getRatingsForProdutoList(produtoIds, comprasByProdutoVendidoId);
+	}
+	
+	/*
+	 * Utility method to extract array of ratings based on array of item ids.
+	 */
+	public double[] getRatingsForProdutoCompraList(Integer[] produtoIds) {
+		return getRatingsForProdutoList(produtoIds, comprasByProdutoVendidoId);
+	}
+	
+	/*
+	 * Utility method to extract array of ratings based on array of item ids.
+	 */
+	public double[] getRatingsForProdutoList(Integer[] produtoIds, Map<Integer, Compra> compras) {
 		double[] ratings = new double[produtoIds.length];
 		for (int i = 0, n = produtoIds.length; i < n; i++) {
-			Compra c = getProdutoCompra(produtoIds[i]);
+			Compra c = compras.get(produtoIds[i]);
 			if (c == null) {
 				throw new IllegalArgumentException(
 						"Empresa doesn't have specified item id (" + "empresaId="
@@ -140,17 +178,31 @@ public class Empresa implements Serializable {
 		return matchedContent;
 	}
 
-	public void setRatings(List<Compra> compras) {
+	public void setComprasCompra(List<Compra> compras) {
 		// Initialize or clean up
-		if (comprasByProdutoId == null) {
-			comprasByProdutoId = new HashMap<Integer, Compra>(compras.size());
+		if (comprasByProdutoCompradoId == null) {
+			comprasByProdutoCompradoId = new HashMap<Integer, Compra>(compras.size());
 		} else {
-			comprasByProdutoId.clear();
+			comprasByProdutoCompradoId.clear();
 		}
 
 		// Load the ratings
 		for (Compra c : compras) {
-			comprasByProdutoId.put(c.getProdutoId(), c);
+			comprasByProdutoCompradoId.put(c.getProdutoId(), c);
+		}
+	}
+	
+	public void setComprasVenda(List<Compra> compras) {
+		// Initialize or clean up
+		if (comprasByProdutoVendidoId == null) {
+			comprasByProdutoVendidoId = new HashMap<Integer, Compra>(compras.size());
+		} else {
+			comprasByProdutoVendidoId.clear();
+		}
+
+		// Load the ratings
+		for (Compra c : compras) {
+			comprasByProdutoVendidoId.put(c.getProdutoId(), c);
 		}
 	}
 

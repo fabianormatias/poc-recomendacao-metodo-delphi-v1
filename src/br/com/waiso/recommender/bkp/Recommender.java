@@ -28,46 +28,62 @@
  *   limitations under the License.
  *   
  */
-package br.com.waiso.recommender.similarity;
+package br.com.waiso.recommender.bkp;
 
+import java.util.List;
+
+import br.com.waiso.recommender.PredictedProdutoRating;
+import br.com.waiso.recommender.data.Empresa;
+import br.com.waiso.recommender.data.Produto;
+import br.com.waiso.recommender.database.DatasetWaiso;
+import br.com.waiso.recommender.similarity.SimilarEmpresa;
+import br.com.waiso.recommender.similarity.SimilarProduto;
 
 /**
- * Defines similarity matrix. For user-oriented methods it represents
- * similarities between users and for item-oriented methods this matrix
- * represents similarities between items.
  * 
+ * @author <a href="mailto:babis@marmanis.com">Babis Marmanis</a>
+ *
  */
-public interface SimilarityMatrix extends java.io.Serializable {
+public interface Recommender {
+
+	public SimilarProduto[] findSimilarProdutos(Produto item);
+
+	public SimilarProduto[] findSimilarProdutos(Produto item, int topN);
+
+	// Similarities
+	public SimilarEmpresa[] findSimilarEmpresas(Empresa empresa);
+
+	public SimilarEmpresa[] findSimilarEmpresas(Empresa empresa, int topN);
+
+	// Auxiliary
+	public DatasetWaiso getDataset();
+
+	public double getSimilarityThreshold();
+
+	public double predictBasedOnProdutoAverage(Produto item);
+
+	public double predictBasedOnEmpresaAverage(Empresa empresa);
+
+	// Predictions
+	public double predictRating(Empresa empresa, Produto item);
 
 	/**
-	 * Similarity matrix id.
+	 * Returns recommendations for the empresa.
 	 * 
-	 * @return
+	 * @param empresa
+	 * @return recommended items with predicted ratings.
 	 */
-	public abstract String getId();
-
-	public abstract RatingCountMatrixWaiso getRatingCountMatrix(Integer idX,
-			Integer idY);
+	public List<PredictedProdutoRating> recommend(Empresa empresa);
 
 	/**
-	 * Returns matrix of similarities. For user-oriented methods it represents
-	 * similarities between users and for item-oriented methods the matrix
-	 * represents similarities between items.
+	 * Returns top N recommendations for the empresa.
 	 * 
-	 * @return similarity matrix
+	 * @param empresa
+	 * @param topN
+	 *            number of top recommendations to return.
+	 * @return recommended items with predicted ratings.
 	 */
-	public abstract double[][] getSimilarityMatrix();
+	public List<PredictedProdutoRating> recommend(Empresa empresa, int topN);
 
-	/**
-	 * Returns similarity value between two objects identified by their IDs.
-	 * 
-	 * @param idX
-	 * @param idY
-	 * @return
-	 */
-	public abstract double getValue(Integer idX, Integer idY);
-
-	public abstract boolean isRatingCountMatrixAvailable();
-
-	public void print();
+	public void setSimilarityThreshold(double similarityThreshold);
 }

@@ -14,9 +14,9 @@ public class GenerateDataset {
 	 */
 	public static void main(String[] args) {
 		try {
-			int numEmpresas = 30;
-			int numModelosProdutos = 5;
-			int numCompras = 100;
+			int numEmpresas = 100;
+			int numModelosProdutos = 50;
+			int numCompras = 1000;
 			String[] nomesProdutos = 
 				{"Bicicleta", "Televisão", "Carro", "Computador", "Smartphone", 
 				 "Guitarra", "Moto", "Caminhão", "Aparelho de som", "Ar condicionado"};

@@ -82,7 +82,7 @@ public interface DatasetWaiso {
 	 * @return
 	 */
 	public double getAverageVendedorRating(int vendedorId);
-
+	
 	/**
 	 * Retrieves a specific item.
 	 * 
@@ -151,6 +151,20 @@ public interface DatasetWaiso {
 	 * @return number of users.
 	 */
 	public int getCompradorCount();
+	
+	/**
+	 * Total number of all available users.
+	 * 
+	 * @return number of users.
+	 */
+	public Collection<Empresa> getCompradores();
+	
+	/**
+	 * Total number of all available users.
+	 * 
+	 * @return number of users.
+	 */
+	public Collection<Empresa> getVendedores();
 	
 	/**
 	 * Total number of all available users.

@@ -30,6 +30,8 @@
  */
 package br.com.waiso.recommender.similarity;
 
+import java.util.Collection;
+
 import org.yooreeka.algos.reco.collab.model.Content;
 import org.yooreeka.util.internet.crawling.util.ValueToIndexMapping;
 import org.yooreeka.util.metrics.CosineSimilarityMeasure;
@@ -41,7 +43,7 @@ import br.com.waiso.recommender.database.DatasetWaiso;
 /**
  * Similarity between empresas based on the content associated with empresas.
  */
-public class EmpresaProdutoContentBasedSimilarity extends SimilarityMatrixImpl {
+public class EmpresaProdutoContentBasedSimilarity extends SimilarityMatrixImplEmpresa {
 
 	/**
 	 * SVUID
@@ -56,11 +58,30 @@ public class EmpresaProdutoContentBasedSimilarity extends SimilarityMatrixImpl {
 		this.useObjIdToIndexMapping = ds.isIdMappingRequired();
 		calculate(ds);
 	}
-
+	
+	// here we assume that empresaId and bookId are:
+	// - integers,
+	// - start with 1
+	// - have no gaps in sequence.
+	// Otherwise we would have to have a mapping from empresaId/bookId into index
 	@Override
-	protected void calculate(DatasetWaiso dataSet) {
+	protected void calculateCompradores(DatasetWaiso dataSet) {
+		calculate(dataSet, true);
+	}
+	
+	// here we assume that empresaId and bookId are:
+	// - integers,
+	// - start with 1
+	// - have no gaps in sequence.
+	// Otherwise we would have to have a mapping from empresaId/bookId into index
+	@Override
+	protected void calculateVendedores(DatasetWaiso dataSet) {
+		calculate(dataSet, false);
+	}
 
-		int nEmpresas = dataSet.getEmpresaCount();
+	private void calculate(DatasetWaiso dataSet, boolean compradores) {
+
+		int nEmpresas = compradores ? dataSet.getCompradorCount() : dataSet.getVendedorCount();
 		int nProdutos = dataSet.getProdutoCount();
 
 		similarityValues = new double[nEmpresas][nProdutos];
@@ -68,7 +89,8 @@ public class EmpresaProdutoContentBasedSimilarity extends SimilarityMatrixImpl {
 		// if we want to use mapping from empresaId/produtoId to matrix index
 		// then we need to generate index for every empresaId and produtoId
 		if (useObjIdToIndexMapping) {
-			for (Empresa u : dataSet.getEmpresas()) {
+			Collection<Empresa> empresas = compradores ? dataSet.getCompradores() : dataSet.getVendedores();
+			for (Empresa u : empresas) {
 				idMappingForEmpresa.getIndex(String.valueOf(u.getId()));
 			}
 
@@ -82,7 +104,7 @@ public class EmpresaProdutoContentBasedSimilarity extends SimilarityMatrixImpl {
 
 		for (int u = 0; u < nEmpresas; u++) {
 			int empresaId = getEmpresaIdForIndex(u);
-			Empresa empresa = dataSet.getEmpresa(empresaId);
+			Empresa empresa = compradores ? dataSet.getComprador(empresaId) : dataSet.getVendedor(empresaId);
 
 			for (int v = 0; v < nProdutos; v++) {
 
@@ -180,6 +202,12 @@ public class EmpresaProdutoContentBasedSimilarity extends SimilarityMatrixImpl {
 		int y = getIndexForProdutoId(produtoId);
 
 		return similarityValues[x][y];
+	}
+
+	//TODO alterar posteriormente para este método sumir
+	@Override
+	protected void calculate(DatasetWaiso dataSet) {
+		
 	}
 
 }

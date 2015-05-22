@@ -42,7 +42,7 @@ public abstract class SimilarityMatrixImpl implements SimilarityMatrix {
 
 	protected String id;
 	protected double similarityValues[][] = null;
-	protected RatingCountMatrix ratingCountMatrix[][] = null;
+	protected RatingCountMatrixWaiso ratingCountMatrix[][] = null;
 	protected boolean keepRatingCountMatrix = false;
 
 	protected boolean useObjIdToIndexMapping = true;
@@ -83,7 +83,7 @@ public abstract class SimilarityMatrixImpl implements SimilarityMatrix {
 		return objId;
 	}
 
-	public RatingCountMatrix getRatingCountMatrix(Integer idX, Integer idY) {
+	public RatingCountMatrixWaiso getRatingCountMatrix(Integer idX, Integer idY) {
 		int x = getIndexFromObjId(idX);
 		int y = getIndexFromObjId(idY);
 

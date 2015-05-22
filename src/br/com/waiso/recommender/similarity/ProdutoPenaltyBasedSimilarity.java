@@ -68,7 +68,7 @@ public class ProdutoPenaltyBasedSimilarity extends SimilarityMatrixImpl {
 		similarityValues = new double[nProdutos][nProdutos];
 
 		if (keepRatingCountMatrix) {
-			ratingCountMatrix = new RatingCountMatrix[nProdutos][nProdutos];
+			ratingCountMatrix = new RatingCountMatrixWaiso[nProdutos][nProdutos];
 		}
 
 		// if we want to use mapping from produtoId to index then generate
@@ -96,7 +96,7 @@ public class ProdutoPenaltyBasedSimilarity extends SimilarityMatrixImpl {
 
 				Produto produtoB = dataSet.getProduto(produtoBId);
 
-				RatingCountMatrix rcm = new RatingCountMatrix(produtoA, produtoB,
+				RatingCountMatrixWaisoProduto rcm = new RatingCountMatrixWaisoProduto(produtoA, produtoB,
 						nRatingValues);
 
 				totalCount = rcm.getTotalCount();

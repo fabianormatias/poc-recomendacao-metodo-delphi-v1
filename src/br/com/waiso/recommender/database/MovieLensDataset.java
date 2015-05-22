@@ -75,14 +75,15 @@ public class MovieLensDataset implements DatasetWaiso {
 	 * @param ratings
 	 *            ratings to save.
 	 */
-	public static void createNewRatingsFile(File f, Collection<RatingWaiso> ratings) {
+	public static void createNewComprasFile(File f, Collection<Compra> compras) {
 		try {
 			PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter(
 					f)));
-			for (RatingWaiso rating : ratings) {
-				pw.println(rating.getEmpresaId() + FIELD_DELIMITER
-						+ rating.getProdutoId() + FIELD_DELIMITER
-						+ rating.getRating());
+			for (Compra compra : compras) {
+				pw.println(compra.getCompradorId() + FIELD_DELIMITER
+						+ compra.getVendedorId() + FIELD_DELIMITER
+						+ compra.getProdutoId() + FIELD_DELIMITER
+						+ compra.getPontuacao());
 			}
 			pw.flush();
 			pw.close();
@@ -98,8 +99,8 @@ public class MovieLensDataset implements DatasetWaiso {
 		return new BufferedReader(new FileReader(f));
 	}
 
-	public static List<RatingWaiso> loadCompras(File f) {
-		List<RatingWaiso> allRatings = new ArrayList<RatingWaiso>();
+	public static List<Compra> loadCompras(File f) {
+		List<Compra> allCompras = new ArrayList<Compra>();
 
 		BufferedReader reader = null;
 		String line = null;
@@ -107,10 +108,11 @@ public class MovieLensDataset implements DatasetWaiso {
 			reader = getReader(f);
 			while ((line = reader.readLine()) != null) {
 				String[] tokens = parseLine(line);
-				int empresaId = Integer.parseInt(tokens[0]);
-				int produtoId = Integer.parseInt(tokens[1]);
-				int rating = Integer.parseInt(tokens[2]);
-				allRatings.add(new RatingWaiso(empresaId, produtoId, rating));
+				int compradorId = Integer.parseInt(tokens[0]);
+				int vendedorId = Integer.parseInt(tokens[1]);
+				int produtoId = Integer.parseInt(tokens[2]);
+				int rating = Integer.parseInt(tokens[3]);
+				allCompras.add(new Compra(compradorId, vendedorId, produtoId, rating));
 			}
 		} catch (IOException e) {
 			throw new RuntimeException(
@@ -129,7 +131,7 @@ public class MovieLensDataset implements DatasetWaiso {
 			}
 		}
 
-		return allRatings;
+		return allCompras;
 	}
 
 	private static String[] parseLine(String line) {
@@ -139,22 +141,27 @@ public class MovieLensDataset implements DatasetWaiso {
 	/*
 	 * All produto ratings.
 	 */
-	private List<Compra> compras = new ArrayList<Compra>();
+	private List<Compra> allCompras = new ArrayList<Compra>();
 
 	/*
 	 * Map of all empresas.
 	 */
-	private Map<Integer, Empresa> allEmpresas = new HashMap<Integer, Empresa>();
+	private Map<Integer, Empresa> allCompradores = new HashMap<Integer, Empresa>();
+	
+	/*
+	 * Map of all empresas.
+	 */
+	private Map<Integer, Empresa> allVendedores = new HashMap<Integer, Empresa>();
 
 	/*
 	 * Map of all produtos.
 	 */
 	private Map<Integer, Produto> allProdutos = new HashMap<Integer, Produto>();
-
+	
 	/*
 	 * Parameters for test dataset
 	 */
-	private int numberOfTestRatings = 0;
+	private int numberOfTestCompras = 0;
 
 	private List<Compra> testCompras = new ArrayList<Compra>();
 
@@ -166,8 +173,8 @@ public class MovieLensDataset implements DatasetWaiso {
 	/*
 	 * Map of produto ratings by empresa id.
 	 */
-	Map<Integer, List<Compra>> compraByCompradorId = new HashMap<Integer, List<Compra>>();
-	Map<Integer, List<Compra>> compraByVendedorId = new HashMap<Integer, List<Compra>>();
+	Map<Integer, List<Compra>> comprasByCompradorId = new HashMap<Integer, List<Compra>>();
+	Map<Integer, List<Compra>> comprasByVendedorId = new HashMap<Integer, List<Compra>>();
 
 	private String name;
 
@@ -177,9 +184,9 @@ public class MovieLensDataset implements DatasetWaiso {
 	}
 
 	public MovieLensDataset(File empresas, File movies, File ratings,
-			int numOfTestRatings) {
+			int numOfTestCompras) {
 		name = getClass().getSimpleName() + System.currentTimeMillis();
-		this.numberOfTestRatings = numOfTestRatings;
+		this.numberOfTestCompras = numOfTestCompras;
 		loadData(empresas, movies, ratings, null);
 	}
 
@@ -196,14 +203,14 @@ public class MovieLensDataset implements DatasetWaiso {
 		loadData(empresas, produtos, null, compras);
 	}
 
-	private void addRatingToMap(Map<Integer, List<RatingWaiso>> map, Integer key,
-			RatingWaiso rating) {
-		List<RatingWaiso> ratingsForKey = map.get(key);
-		if (ratingsForKey == null) {
-			ratingsForKey = new ArrayList<RatingWaiso>();
-			map.put(key, ratingsForKey);
+	private void addCompraToMap(Map<Integer, List<Compra>> map, Integer key,
+			Compra compra) {
+		List<Compra> comprasForKey = map.get(key);
+		if (comprasForKey == null) {
+			comprasForKey = new ArrayList<Compra>();
+			map.put(key, comprasForKey);
 		}
-		ratingsForKey.add(rating);
+		comprasForKey.add(compra);
 	}
 
 	private Produto createNewProduto(int produtoId, String name) {
@@ -226,12 +233,20 @@ public class MovieLensDataset implements DatasetWaiso {
 		return new String[0];
 	}
 
-	public double getAverageProdutoRating(int produtoId) {
-		return getProduto(produtoId).getAverageRating();
+	public double getAverageProdutoRatingByComprador(int produtoId) {
+		return getProduto(produtoId).getAverageRatingByComprador();
+	}
+	
+	public double getAverageProdutoRatingByVendedor(int produtoId) {
+		return getProduto(produtoId).getAverageRatingByVendedor();
 	}
 
-	public double getAverageEmpresaRating(int empresaId) {
-		return getEmpresa(empresaId).getAverageRating();
+	public double getAverageCompradorRating(int compradorId) {
+		return getComprador(compradorId).getAverageRatingByCompra();
+	}
+	
+	public double getAverageVendedorRating(int vendedorId) {
+		return getComprador(vendedorId).getAverageRatingByVenda();
 	}
 
 	public Produto getProduto(Integer produtoId) {
@@ -250,28 +265,40 @@ public class MovieLensDataset implements DatasetWaiso {
 		return name;
 	}
 
-	public Collection<RatingWaiso> getRatings() {
-		return this.allRatings;
+	public Collection<Compra> getCompras() {
+		return this.allCompras;
 	}
 
-	public int getRatingsCount() {
-		return allRatings.size();
+	public int getComprasCount() {
+		return allCompras.size();
 	}
 
-	public Collection<RatingWaiso> getTestRatings() {
-		return this.testRatings;
+	public Collection<Compra> getTestCompras() {
+		return this.testCompras;
 	}
 
-	public Empresa getEmpresa(Integer empresaId) {
-		return allEmpresas.get(empresaId);
+	public Empresa getComprador(Integer compradorId) {
+		return allCompradores.get(compradorId);
+	}
+	
+	public Empresa getVendedor(Integer vendedorId) {
+		return allVendedores.get(vendedorId);
 	}
 
-	public int getEmpresaCount() {
-		return allEmpresas.size();
+	public int getVendedorCount() {
+		return allVendedores.size();
+	}
+	
+	public int getCompradorCount() {
+		return allCompradores.size();
 	}
 
-	public Collection<Empresa> getEmpresas() {
-		return allEmpresas.values();
+	public Collection<Empresa> getVendedores() {
+		return allVendedores.values();
+	}
+	
+	public Collection<Empresa> getCompradores() {
+		return allCompradores.values();
 	}
 
 	public boolean isIdMappingRequired() {
@@ -279,29 +306,31 @@ public class MovieLensDataset implements DatasetWaiso {
 	}
 
 	private void loadData(File empresasFile, File produtosFile, File compraFile,
-			List<Compra> ratings) {
+			List<Compra> compras) {
 		try {
 			/* Load all available ratings */
-			if (ratings == null) {
-				allRatings = loadCompras(ratings);
+			if (compras == null) {
+				allCompras = loadCompras(compraFile);
 			} else {
-				allRatings = ratings;
+				allCompras = compras;
 			}
 
 			/* Exclude ratings if needed */
-			withholdRatings();
+			withholdCompras();
 
 			/* build maps that provide access to ratings by empresaId or produtoId */
-			for (RatingWaiso rating : allRatings) {
-				addRatingToMap(ratingsByProdutoId, rating.getProdutoId(), rating);
-				addRatingToMap(ratingsByEmpresaId, rating.getEmpresaId(), rating);
+			for (Compra compra : allCompras) {
+				addCompraToMap(comprasByProdutoId, compra.getProdutoId(), compra);
+				addCompraToMap(comprasByCompradorId, compra.getCompradorId(), compra);
+				addCompraToMap(comprasByVendedorId, compra.getVendedorId(), compra);
 			}
 			/*
 			 * load empresas and produto. Each instance will have a set of ratings
 			 * relevant to it
 			 */
-			allEmpresas = loadEmpresas(empresasFile);
 			allProdutos = loadProdutos(produtosFile);
+			allCompradores = loadEmpresas(empresasFile, comprasByCompradorId, true);
+			allVendedores = loadEmpresas(empresasFile, comprasByVendedorId, false);
 		} catch (IOException e) {
 			throw new RuntimeException("Failed to load MovieLens data: ", e);
 		}
@@ -349,7 +378,7 @@ public class MovieLensDataset implements DatasetWaiso {
 		return produtos;
 	}
 
-	private Map<Integer, Empresa> loadEmpresas(File empresasFile) throws IOException {
+	private Map<Integer, Empresa> loadEmpresas(File empresasFile, Map<Integer, List<Compra>> comprasByEmpresaId, boolean comprador) throws IOException {
 		Map<Integer, Empresa> empresas = new HashMap<Integer, Empresa>();
 
 		BufferedReader reader = getReader(empresasFile);
@@ -359,40 +388,28 @@ public class MovieLensDataset implements DatasetWaiso {
 			String[] tokens = parseLine(line);
 			/* at the moment we are only interested in empresa id */
 			int empresaId = Integer.parseInt(tokens[0]);
-			List<RatingWaiso> empresaRatings = ratingsByEmpresaId.get(empresaId);
-			if (empresaRatings == null) {
-				empresaRatings = new ArrayList<RatingWaiso>();
+			List<Compra> empresaCompras = comprasByEmpresaId.get(empresaId);
+			if (empresaCompras == null) {
+				empresaCompras = new ArrayList<Compra>();
 			}
-			Empresa empresa = new Empresa(empresaId, empresaRatings);
+			Empresa empresa = new Empresa(empresaId, empresaCompras, comprador);
 			empresas.put(empresa.getId(), empresa);
 		}
 
 		return empresas;
 	}
 
-	public void setTestRatingsCount(int numberOfRatings) {
-		this.numberOfTestRatings = numberOfRatings;
+	public void setTestComprasCount(int numberOfCompras) {
+		this.numberOfTestCompras = numberOfCompras;
 	}
 
-	private void withholdRatings() {
+	private void withholdCompras() {
 		Random rnd = new Random();
-		while (testRatings.size() < this.numberOfTestRatings) {
-			int randomIndex = rnd.nextInt(allRatings.size());
-			RatingWaiso rating = allRatings.remove(randomIndex);
-			testRatings.add(rating);
+		while (testCompras.size() < this.numberOfTestCompras) {
+			int randomIndex = rnd.nextInt(allCompras.size());
+			Compra compra = allCompras.remove(randomIndex);
+			testCompras.add(compra);
 		}
-	}
-
-	@Override
-	public double getAverageProdutoRatingByComprador(int itemId) {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public double getAverageProdutoRatingByVendedor(int itemId) {
-		// TODO Auto-generated method stub
-		return 0;
 	}
 
 }

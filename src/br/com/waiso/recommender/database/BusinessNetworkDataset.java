@@ -243,11 +243,11 @@ public class BusinessNetworkDataset implements DatasetWaiso {
 	}
 
 	public double getAverageCompradorRating(int empresaId) {
-		return getComprador(empresaId).getAverageRating();
+		return getComprador(empresaId).getAverageRatingByCompra();
 	}
 	
 	public double getAverageVendedorRating(int empresaId) {
-		return getVendedor(empresaId).getAverageRating();
+		return getVendedor(empresaId).getAverageRatingByVenda();
 	}
 
 	public Produto getProduto(Integer produtoId) {
@@ -330,8 +330,8 @@ public class BusinessNetworkDataset implements DatasetWaiso {
 			 * relevant to it
 			 */
 			allProdutos = loadProdutos(produtosFile);
-			allCompradores = loadEmpresas(empresasFile, comprasByCompradorId);
-			allVendedores = loadEmpresas(empresasFile, comprasByVendedorId);
+			allCompradores = loadEmpresas(empresasFile, comprasByCompradorId, true);
+			allVendedores = loadEmpresas(empresasFile, comprasByVendedorId, false);
 		} catch (IOException e) {
 			throw new RuntimeException("Failed to load MovieLens data: ", e);
 		}
@@ -379,7 +379,7 @@ public class BusinessNetworkDataset implements DatasetWaiso {
 		return produtos;
 	}
 
-	private Map<Integer, Empresa> loadEmpresas(File empresasFile, Map<Integer, List<Compra>> comprasByEmpresaId) throws IOException {
+	private Map<Integer, Empresa> loadEmpresas(File empresasFile, Map<Integer, List<Compra>> comprasByEmpresaId, boolean comprador) throws IOException {
 		Map<Integer, Empresa> empresas = new HashMap<Integer, Empresa>();
 
 		BufferedReader reader = getReader(empresasFile);
@@ -393,7 +393,7 @@ public class BusinessNetworkDataset implements DatasetWaiso {
 			if (empresaCompras == null) {
 				empresaCompras = new ArrayList<Compra>();
 			}
-			Empresa empresa = new Empresa(empresaId, empresaCompras);
+			Empresa empresa = new Empresa(empresaId, empresaCompras, comprador);
 			empresas.put(empresa.getId(), empresa);
 		}
 

@@ -30,11 +30,13 @@
  */
 package br.com.waiso.recommender.similarity;
 
+import java.util.Collection;
+
 import br.com.waiso.recommender.data.Empresa;
 import br.com.waiso.recommender.database.DatasetWaiso;
 
 
-public class ImprovedEmpresaBasedSimilarity extends SimilarityMatrixImpl {
+public class ImprovedEmpresaBasedSimilarity extends SimilarityMatrixImplEmpresa {
 
 	/**
 	 * Unique identifier for serialization
@@ -53,27 +55,47 @@ public class ImprovedEmpresaBasedSimilarity extends SimilarityMatrixImpl {
 		this.useObjIdToIndexMapping = dataSet.isIdMappingRequired();
 		calculate(dataSet);
 	}
-
+	
 	// here we assume that empresaId and bookId are:
 	// - integers,
 	// - start with 1
 	// - have no gaps in sequence.
 	// Otherwise we would have to have a mapping from empresaId/bookId into index
 	@Override
-	protected void calculate(DatasetWaiso dataSet) {
+	protected void calculateCompradores(DatasetWaiso dataSet) {
+		calculate(dataSet, true);
+	}
+	
+	// here we assume that empresaId and bookId are:
+	// - integers,
+	// - start with 1
+	// - have no gaps in sequence.
+	// Otherwise we would have to have a mapping from empresaId/bookId into index
+	@Override
+	protected void calculateVendedores(DatasetWaiso dataSet) {
+		calculate(dataSet, false);
+	}
 
-		int nEmpresas = dataSet.getEmpresaCount();
+	// here we assume that empresaId and bookId are:
+	// - integers,
+	// - start with 1
+	// - have no gaps in sequence.
+	// Otherwise we would have to have a mapping from empresaId/bookId into index
+	private void calculate(DatasetWaiso dataSet, boolean compradores) {
+
+		int nEmpresas = compradores ? dataSet.getCompradorCount() : dataSet.getVendedorCount();
 		int nRatingValues = 5;
 
 		similarityValues = new double[nEmpresas][nEmpresas];
 		if (keepRatingCountMatrix) {
-			ratingCountMatrix = new RatingCountMatrix[nEmpresas][nEmpresas];
+			ratingCountMatrix = new RatingCountMatrixWaiso[nEmpresas][nEmpresas];
 		}
 
 		// if we want to use mapping from empresaId to index then generate
 		// index for every empresaId
 		if (useObjIdToIndexMapping) {
-			for (Empresa u : dataSet.getEmpresas()) {
+			Collection<Empresa> empresas = compradores ? dataSet.getCompradores() : dataSet.getVendedores();
+			for (Empresa u : empresas) {
 				idMapping.getIndex(String.valueOf(u.getId()));
 			}
 		}
@@ -81,16 +103,16 @@ public class ImprovedEmpresaBasedSimilarity extends SimilarityMatrixImpl {
 		for (int u = 0; u < nEmpresas; u++) {
 
 			int empresaAId = getObjIdFromIndex(u);
-			Empresa empresaA = dataSet.getEmpresa(empresaAId);
+			Empresa empresaA = compradores ? dataSet.getComprador(empresaAId) : dataSet.getVendedor(empresaAId);
 
 			// Notice that we need to consider only the upper triangular matrix
 			for (int v = u + 1; v < nEmpresas; v++) {
 
 				int empresaBId = getObjIdFromIndex(v);
-				Empresa empresaB = dataSet.getEmpresa(empresaBId);
+				Empresa empresaB = compradores ? dataSet.getComprador(empresaBId) : dataSet.getVendedor(empresaBId);
 
-				RatingCountMatrix rcm = new RatingCountMatrix(empresaA, empresaB,
-						nRatingValues);
+				RatingCountMatrixWaisoEmpresa rcm = new RatingCountMatrixWaisoEmpresa(empresaA, empresaB,
+						nRatingValues, compradores);
 				int totalCount = rcm.getTotalCount();
 				int agreementCount = rcm.getAgreementCount();
 
@@ -125,5 +147,11 @@ public class ImprovedEmpresaBasedSimilarity extends SimilarityMatrixImpl {
 			similarityValues[u][u] = 1.0; // RatingCountMatrix wasn't
 											// created for this case
 		}
+	}
+
+	//TODO alterar posteriormente para este método sumir
+	@Override
+	protected void calculate(DatasetWaiso dataSet) {
+		
 	}
 }
