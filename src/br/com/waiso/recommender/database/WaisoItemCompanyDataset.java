@@ -41,6 +41,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -54,11 +55,11 @@ import br.com.waiso.recommender.data.RatingWaiso;
  * Dataset implementation that we will use to work with MovieLens data. All data
  * is loaded from three files: empresas, movies (produtos), and ratings.
  */
-public class MovieLensDataset implements DatasetWaiso {
+public class WaisoItemCompanyDataset implements DatasetWaiso {
 
-	public static final String USERS_FILENAME = "empresas.dat";
-	public static final String ITEMS_FILENAME = "movies.dat";
-	public static final String RATINGS_FILENAME = "ratings.dat";
+	public static final String USERS_FILENAME = "empresas.txt";
+	public static final String ITEMS_FILENAME = "movies.txt";
+	public static final String RATINGS_FILENAME = "ratings.txt";
 
 	/*
 	 * Delimiter that is used by MovieLens data files.
@@ -136,7 +137,7 @@ public class MovieLensDataset implements DatasetWaiso {
 
 	private static String[] parseLine(String line) {
 		// possible field delimiters: "::", "\t", "|"
-		return line.split("::|\t|\\|");
+		return line.split(";");
 	}
 	/*
 	 * All produto ratings.
@@ -178,25 +179,25 @@ public class MovieLensDataset implements DatasetWaiso {
 
 	private String name;
 
-	public MovieLensDataset(File empresas, File produtos, File compras) {
+	public WaisoItemCompanyDataset(File empresas, File produtos, File compras) {
 		name = getClass().getSimpleName() + System.currentTimeMillis();
 		loadData(empresas, produtos, compras, null);
 	}
 
-	public MovieLensDataset(File empresas, File movies, File ratings,
+	public WaisoItemCompanyDataset(File empresas, File movies, File ratings,
 			int numOfTestCompras) {
 		name = getClass().getSimpleName() + System.currentTimeMillis();
 		this.numberOfTestCompras = numOfTestCompras;
 		loadData(empresas, movies, ratings, null);
 	}
 
-	public MovieLensDataset(String name, File empresas, File movies, File ratings) {
+	public WaisoItemCompanyDataset(String name, File empresas, File movies, File ratings) {
 
 		this.name = name;
 		loadData(empresas, movies, ratings, null);
 	}
 
-	public MovieLensDataset(String name, File empresas, File produtos,
+	public WaisoItemCompanyDataset(String name, File empresas, File produtos,
 			List<Compra> compras) {
 
 		this.name = name;
@@ -316,7 +317,7 @@ public class MovieLensDataset implements DatasetWaiso {
 			}
 
 			/* Exclude ratings if needed */
-			withholdCompras();
+//			withholdCompras();
 
 			/* build maps that provide access to ratings by empresaId or produtoId */
 			for (Compra compra : allCompras) {
@@ -409,6 +410,25 @@ public class MovieLensDataset implements DatasetWaiso {
 			int randomIndex = rnd.nextInt(allCompras.size());
 			Compra compra = allCompras.remove(randomIndex);
 			testCompras.add(compra);
+		}
+	}
+	
+	public List<Compra> getComprasByProdutoId(Integer produtoId) {
+		return comprasByProdutoId.get(produtoId);
+	}
+	
+	@Override
+	public void print() {
+		Iterator<List<Compra>> i = comprasByProdutoId.values().iterator();
+		List<Compra> compras = null;
+		while (i.hasNext()) {
+			compras = i.next();
+			for (Compra compra : compras) {
+				System.out.print("Pontuação - " + compra.getPontuacao());
+				System.out.print(" -> Comprador - " + getComprador(compra.getCompradorId()).getName());
+				System.out.print(" -> Vendedor - " + getVendedor(compra.getVendedorId()).getName());
+				System.out.println(" -> Produto - " + getProduto(compra.getProdutoId()).getName());
+			}
 		}
 	}
 

@@ -413,4 +413,15 @@ public class BusinessNetworkDataset implements DatasetWaiso {
 		}
 	}
 
+	@Override
+	public void print() {
+		
+	}
+
+	@Override
+	public List<Compra> getComprasByProdutoId(Integer produtoId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

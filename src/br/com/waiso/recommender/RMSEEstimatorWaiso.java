@@ -39,7 +39,7 @@ import br.com.waiso.recommender.data.Empresa;
 import br.com.waiso.recommender.data.Produto;
 import br.com.waiso.recommender.data.RatingWaiso;
 import br.com.waiso.recommender.database.DatasetWaiso;
-import br.com.waiso.recommender.database.MovieLensDataset;
+import br.com.waiso.recommender.database.WaisoItemCompanyDataset;
 
 /**
  * Calculates Root Mean Squared Error for the recommender.

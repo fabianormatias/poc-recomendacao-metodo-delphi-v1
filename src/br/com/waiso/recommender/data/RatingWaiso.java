@@ -30,6 +30,8 @@
  */
 package br.com.waiso.recommender.data;
 
+import java.util.List;
+
 
 /**
  * Generic representation of a rating given by empresa to a product (produto).
@@ -53,6 +55,14 @@ public class RatingWaiso implements java.io.Serializable {
 
 	public void setRating(int rating) {
 		this.rating = rating;
+	}
+	
+	public static double avarageRating(List<Compra> compras) {
+		double rating = 0;
+		for (Compra compra : compras) {
+			rating += compra.getPontuacao();
+		}
+		return rating/compras.size();
 	}
 
 	@Override

@@ -1,0 +1,20 @@
+1;Bicicleta 1
+2;Bicicleta 2
+3;Televisão 1
+4;Televisão 2
+5;Carro 1
+6;Carro 2
+7;Computador 1
+8;Computador 2
+9;Smartphone 1
+10;Smartphone 2
+11;Guitarra 1
+12;Guitarra 2
+13;Moto 1
+14;Moto 2
+15;Caminhão 1
+16;Caminhão 2
+17;Aparelho de som 1
+18;Aparelho de som 2
+19;Ar condicionado 1
+20;Ar condicionado 2

@@ -32,6 +32,7 @@ package br.com.waiso.recommender.similarity;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.List;
 
 import br.com.waiso.recommender.data.Compra;
 import br.com.waiso.recommender.data.Empresa;
@@ -57,13 +58,13 @@ public class RatingCountMatrixWaisoProduto extends RatingCountMatrixWaiso implem
 	 * empresas that rated both produtos.
 	 */
 	private void calculate(Produto produtoA, Produto produtoB) {
-		for (Compra compraForA : produtoA.getAllComprasByComprador()) {
+		for (List<Compra> compraForA : produtoA.getAllComprasByComprador()) {
 			// check if the same empresa rated produtoB
-			Compra compraForB = produtoB.getCompradorCompra(compraForA.getCompradorId());
+			List<Compra> compraForB = produtoB.getCompradorCompra(compraForA.get(0).getCompradorId()); 
 			if (compraForB != null) {
 				// element in the matrix is determined by the rating values.
-				int i = compraForA.getPontuacao() - 1;
-				int j = compraForB.getPontuacao() - 1;
+				int i = (int) (RatingWaiso.avarageRating(compraForA) - 1);
+				int j = (int) (RatingWaiso.avarageRating(compraForB) - 1);
 				matrix[i][j]++;
 			}
 		}

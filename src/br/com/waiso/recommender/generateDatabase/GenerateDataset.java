@@ -14,9 +14,9 @@ public class GenerateDataset {
 	 */
 	public static void main(String[] args) {
 		try {
-			int numEmpresas = 100;
-			int numModelosProdutos = 50;
-			int numCompras = 1000;
+			int numEmpresas = 10;
+			int numModelosProdutos = 2;
+			int numCompras = 20;
 			String[] nomesProdutos = 
 				{"Bicicleta", "Televisão", "Carro", "Computador", "Smartphone", 
 				 "Guitarra", "Moto", "Caminhão", "Aparelho de som", "Ar condicionado"};
@@ -38,7 +38,9 @@ public class GenerateDataset {
 				buff.append("\n");
 			}
 			System.out.println(buff.toString());
-//			wEmpresas.write("");
+			wEmpresas.write(buff.toString());
+			wEmpresas.flush();
+			wEmpresas.close();
 			
 			buff = new StringBuffer();
 			File produtos = new File(ConstantsDatabase.DATABASE_DIR+"produtos.txt");
@@ -61,7 +63,9 @@ public class GenerateDataset {
 				}
 			}
 			System.out.println(buff.toString());
-//			wProdutos.write("");
+			wProdutos.write(buff.toString());
+			wProdutos.flush();
+			wProdutos.close();
 			
 			buff = new StringBuffer();
 			File compras = new File(ConstantsDatabase.DATABASE_DIR+"compras.txt");
@@ -82,7 +86,7 @@ public class GenerateDataset {
 			int vendedor = 0;
 			int pontuacao = 0;
 			for (int i = 0; i < numCompras; i++) {
-				produtoCompra = r.nextInt(idProduto)+1;
+				produtoCompra = r.nextInt(nomesProdutos.length*numModelosProdutos)+1;
 				comprador = r.nextInt(numEmpresas)+1;
 				if((comprador%5) == 0) {
 					vendedor = r.nextInt(numEmpresas)+1;
@@ -96,17 +100,19 @@ public class GenerateDataset {
 					}
 					pontuacao = r.nextInt(5)+1;
 				}
-				buff.append(comprador);
+				buff.append(comprador==0?1:comprador);
 				buff.append(";");
-				buff.append(vendedor);
+				buff.append(vendedor==0?1:vendedor);
 				buff.append(";");
-				buff.append(produtoCompra);
+				buff.append(produtoCompra==0?1:produtoCompra);
 				buff.append(";");
 				buff.append(pontuacao);
 				buff.append("\n");
 			}
 			System.out.println(buff.toString());
-//			wCompras.write("");
+			wCompras.write(buff.toString());
+			wCompras.flush();
+			wCompras.close();
 			
 		} catch (IOException e) {
 			e.printStackTrace();

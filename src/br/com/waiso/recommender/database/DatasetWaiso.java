@@ -31,6 +31,7 @@
 package br.com.waiso.recommender.database;
 
 import java.util.Collection;
+import java.util.List;
 
 import br.com.waiso.recommender.data.Compra;
 import br.com.waiso.recommender.data.Empresa;
@@ -182,4 +183,8 @@ public interface DatasetWaiso {
 	 *         index = id - 1.
 	 */
 	public boolean isIdMappingRequired();
+	
+	public List<Compra> getComprasByProdutoId(Integer produtoId);
+
+	public void print();
 }

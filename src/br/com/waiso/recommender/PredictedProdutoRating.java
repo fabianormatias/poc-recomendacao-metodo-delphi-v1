@@ -38,6 +38,7 @@ import java.util.Comparator;
 import java.util.List;
 
 import br.com.waiso.recommender.data.Empresa;
+import br.com.waiso.recommender.data.Produto;
 import br.com.waiso.recommender.database.DatasetWaiso;
 
 /**
@@ -103,20 +104,24 @@ public class PredictedProdutoRating {
 		});
 	}
 
-	private int empresaId;
+	private Empresa empresa;
 
-	private int produtoId;
+	private Produto produto;
 
 	private double rating;
 
-	public PredictedProdutoRating(int empresaId, int produtoId, double rating) {
-		this.empresaId = empresaId;
-		this.produtoId = produtoId;
+	public PredictedProdutoRating(Empresa empresa, Produto produto, double rating) {
+		this.empresa = empresa;
+		this.produto = produto;
 		this.rating = rating;
 	}
 
 	public int getProdutoId() {
-		return produtoId;
+		return produto.getId();
+	}
+	
+	public String getProdutoName() {
+		return produto.getName();
 	}
 
 	public double getRating() {
@@ -137,7 +142,11 @@ public class PredictedProdutoRating {
 	}
 
 	public int getEmpresaId() {
-		return empresaId;
+		return empresa.getId();
+	}
+	
+	public String getEmpresaName() {
+		return empresa.getName();
 	}
 
 	public void setRating(double val) {
@@ -146,7 +155,7 @@ public class PredictedProdutoRating {
 
 	@Override
 	public String toString() {
-		return this.getClass().getSimpleName() + "[empresaId: " + empresaId
-				+ ", produtoId: " + produtoId + ", rating: " + rating + "]";
+		return this.getClass().getSimpleName() + "[empresaId: " + empresa.getId()
+				+ ", produtoId: " + produto.getId() + ", rating: " + rating + "]";
 	}
 }

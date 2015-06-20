@@ -43,9 +43,15 @@ public class EmpresaBasedSimilarity extends SimilarityMatrixImplEmpresa {
 	 */
 	private static final long serialVersionUID = 5741616253320567238L;
 
-	public EmpresaBasedSimilarity(DatasetWaiso dataSet) {
+	public EmpresaBasedSimilarity(DatasetWaiso dataSet, boolean compradores) {
 
 		this(EmpresaBasedSimilarity.class.getSimpleName(), dataSet, true);
+		calculateAction(dataSet, compradores);
+	}
+	
+	public EmpresaBasedSimilarity(DatasetWaiso dataSet) {
+		this(EmpresaBasedSimilarity.class.getSimpleName(), dataSet, true);
+		calculate(dataSet);
 	}
 
 	public EmpresaBasedSimilarity(String id, DatasetWaiso dataSet,
@@ -53,7 +59,14 @@ public class EmpresaBasedSimilarity extends SimilarityMatrixImplEmpresa {
 		this.id = id;
 		this.keepRatingCountMatrix = keepRatingCountMatrix;
 		this.useObjIdToIndexMapping = dataSet.isIdMappingRequired();
-		calculate(dataSet);
+	}
+
+	private void calculateAction(DatasetWaiso dataSet, boolean compradores) {
+		if (compradores) {
+			calculateCompradores(dataSet);
+		} else {
+			calculateVendedores(dataSet);
+		}
 	}
 
 	// here we assume that empresaId and bookId are:
@@ -90,8 +103,8 @@ public class EmpresaBasedSimilarity extends SimilarityMatrixImplEmpresa {
 		// index for every empresaId
 		if (useObjIdToIndexMapping) {
 			Collection<Empresa> empresas = compradores ? dataSet.getCompradores() : dataSet.getVendedores(); 
-			for (Empresa u : empresas) {
-				idMapping.getIndex(String.valueOf(u.getId()));
+			for (Empresa c : empresas) {
+				idMapping.getIndex(String.valueOf(c.getId()));
 			}
 		}
 

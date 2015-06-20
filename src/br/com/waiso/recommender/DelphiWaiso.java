@@ -30,17 +30,28 @@
  */
 package br.com.waiso.recommender;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
 import org.yooreeka.algos.reco.collab.model.RecommendationType;
 import org.yooreeka.config.YooreekaConfigurator;
 
+import br.com.waiso.recommender.data.Compra;
 import br.com.waiso.recommender.data.Empresa;
 import br.com.waiso.recommender.data.Produto;
+import br.com.waiso.recommender.data.RatingWaiso;
+import br.com.waiso.recommender.database.ConstantsDatabase;
 import br.com.waiso.recommender.database.DatasetWaiso;
+import br.com.waiso.recommender.database.WaisoItemCompanyDataset;
+import br.com.waiso.recommender.similarity.EmpresaBasedSimilarity;
+import br.com.waiso.recommender.similarity.ProdutoBasedSimilarity;
 import br.com.waiso.recommender.similarity.SimilarityMatrix;
-import br.com.waiso.recommender.similarity.SimilarityMatrixRepository;
 
 /**
  * Recommender. Has to be initialized with similarity function and data.
@@ -49,17 +60,46 @@ import br.com.waiso.recommender.similarity.SimilarityMatrixRepository;
  * 
  */
 public class DelphiWaiso implements RecommenderWaiso {
+	
+	public static void main(String[] args) {
+		File empresas = new File(ConstantsDatabase.DATABASE_DIR+"empresas.txt");
+		File produtos = new File(ConstantsDatabase.DATABASE_DIR+"produtos.txt");
+		File compras = new File(ConstantsDatabase.DATABASE_DIR+"compras.txt");
+		DatasetWaiso dsw = new WaisoItemCompanyDataset(empresas, produtos, compras);
+		dsw.print();
+		DelphiWaiso delphi = new DelphiWaiso(dsw, RecommendationType.WAISO_BASED);
+		int idEmpresa = 5;
+		Empresa empresa = dsw.getVendedor(idEmpresa);
+		ArrayList<PredictedProdutoRating> predictingRatingByCompany = new ArrayList<PredictedProdutoRating>();
+		Iterator<Produto> it = dsw.getProdutos().iterator();
+		Produto p = null;
+		while (it.hasNext()) {
+			p = it.next();
+			PredictedProdutoRating predictedPRating = new PredictedProdutoRating(empresa, p, delphi.estimateWaisoBasedRating(empresa, p));
+			predictingRatingByCompany.add(predictedPRating);
+//			System.out.println(predictedPRating.getProdutoName() + " = " +  predictedPRating.getRating());
+		}
+		
+		PredictedProdutoRating.sort(predictingRatingByCompany);
+		for (PredictedProdutoRating predictedProdutoRating : predictingRatingByCompany) {
+			System.out.println(predictedProdutoRating.getProdutoName() + " = " +  predictedProdutoRating.getRating());
+		}
+		
+	}
 
 	private static final double DEFAULT_SIMILARITY_THRESHOLD = 0.50;
 	private static final double MAX_RATING = 5;
 	private static final Logger LOG = Logger.getLogger(DelphiWaiso.class.getName());
 
 	private RecommendationType type;
-	private SimilarityMatrix similarityMatrix;
+	private SimilarityMatrix similarityMatrixCompraEmpresa;
+	private SimilarityMatrix similarityMatrixCompraProduto;
+	private SimilarityMatrix similarityMatrixVenda;
 	private DatasetWaiso dataSet;
 	private boolean verbose = true;
 	private double similarityThreshold = DEFAULT_SIMILARITY_THRESHOLD;
-	private Map<Integer, Double> maxPredictedRating;
+	private Map<Integer, Double> maxPredictedCompradorRating;
+	private Map<Integer, Double> maxPredictedVendedorRating;
 
 	public DelphiWaiso(DatasetWaiso dataSet, 
 			      RecommendationType type) {
@@ -95,9 +135,101 @@ public class DelphiWaiso implements RecommenderWaiso {
 		this.type = type;
 
 		this.dataSet = dataSet;
-//		maxPredictedRating = new HashMap<Integer, Double>(dataSet.getEmpresaCount() / 2); TODO vecomo fazer aqui
+		maxPredictedCompradorRating = new HashMap<Integer, Double>(dataSet.getCompradorCount()/ 2);
+		maxPredictedVendedorRating = new HashMap<Integer, Double>(dataSet.getVendedorCount()/ 2);
 		
-		this.similarityMatrix = similarityMatrix;
+		this.similarityMatrixCompraEmpresa = similarityMatrix;
+	}
+	
+	// -----------------------------------------------------------
+	// PRIVATE (AUXILIARY) METHODS
+	// -----------------------------------------------------------
+	public double estimateWaisoBasedRating(Empresa companySearching, Produto produto) {
+		
+		double estimatedRatingCompradores = companySearching.getAverageRatingByCompra();
+
+		int itemId = produto.getId();
+		int empresaId = companySearching.getId();
+		
+		double estimatedRatingProdutos = dataSet.getProduto(itemId).getAverageRatingByComprador();
+
+		double similaritySumCompradores = 0.0;
+		double weightedRatingSumCompradores = 0.0;
+		
+		double similaritySumProdutos = 0.0;
+		double weightedRatingSumProdutos = 0.0;
+
+		// check if user has already rated this produto
+		List<Compra> c = companySearching.getProdutoCompraByCompra(itemId);
+
+		if (c != null) {
+			RatingWaiso existingRatingByEmpresa = new RatingWaiso((int)RatingWaiso.avarageRating(c));
+			estimatedRatingCompradores = existingRatingByEmpresa.getRating();
+
+		} else {
+			List<Compra> compras = dataSet.getComprasByProdutoId(itemId);
+			Empresa comprador = null;
+			
+			if(compras != null) {
+				//Similaridade com as empresas compradoras
+				for (Compra compra : compras) {
+					comprador = dataSet.getComprador(compra.getCompradorId());
+					
+					similarityMatrixCompraEmpresa = new EmpresaBasedSimilarity(dataSet, true);
+					RatingWaiso itemRating = new RatingWaiso(compra.getPontuacao());
+					
+					/**
+					 * @todo describe how this generalizes to more accurate
+					 *       similarities
+					 */
+					double similarityBetweenEmpresas = similarityMatrixCompraEmpresa.getValue(
+							empresaId, comprador.getId());
+	
+					double ratingByNeighbor = itemRating.getRating();
+	
+					double weightedRating = similarityBetweenEmpresas
+							* ratingByNeighbor;
+	
+					weightedRatingSumCompradores += weightedRating;
+					similaritySumCompradores += similarityBetweenEmpresas;
+				}
+				
+				if (similaritySumCompradores > 0.0) {
+					estimatedRatingCompradores = weightedRatingSumCompradores / similaritySumCompradores;
+				}
+			}
+			
+			Collection<List<Compra>> comprasByCompany = companySearching.getAllComprasCompra();
+			for (List<Compra> listCompra : comprasByCompany) {
+				similarityMatrixCompraEmpresa = new ProdutoBasedSimilarity(String.valueOf( listCompra.get(0).getProdutoId()), dataSet, true);
+				similarityMatrixCompraEmpresa.getValue(itemId, listCompra.get(0).getProdutoId());
+				
+				RatingWaiso itemRating = new RatingWaiso((int) RatingWaiso.avarageRating(listCompra));
+				
+				/**
+				 * @todo describe how this generalizes to more accurate
+				 *       similarities
+				 */
+				double similarityBetweenEmpresas = similarityMatrixCompraEmpresa.getValue(
+						empresaId, comprador.getId());
+
+				double ratingByNeighbor = itemRating.getRating();
+
+				double weightedRating = similarityBetweenEmpresas
+						* ratingByNeighbor;
+
+				similaritySumProdutos += weightedRating;
+				weightedRatingSumProdutos += similarityBetweenEmpresas;
+			}
+			
+			if (similaritySumProdutos > 0.0) {
+				estimatedRatingProdutos = weightedRatingSumProdutos / similaritySumProdutos;
+			}
+			
+			
+		}
+
+		return (estimatedRatingCompradores+estimatedRatingProdutos)/2;
 	}
 
 	

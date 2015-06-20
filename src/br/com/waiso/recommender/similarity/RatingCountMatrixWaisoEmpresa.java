@@ -32,9 +32,11 @@ package br.com.waiso.recommender.similarity;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.List;
 
 import br.com.waiso.recommender.data.Compra;
 import br.com.waiso.recommender.data.Empresa;
+import br.com.waiso.recommender.data.RatingWaiso;
 
 public class RatingCountMatrixWaisoEmpresa extends RatingCountMatrixWaiso implements Serializable {
 
@@ -43,7 +45,6 @@ public class RatingCountMatrixWaisoEmpresa extends RatingCountMatrixWaiso implem
 	 */
 	private static final long serialVersionUID = -8216800040843757769L;
 
-	private int matrix[][] = null;
 	private boolean compradores = false;
 
 	public RatingCountMatrixWaisoEmpresa(Empresa empresaA, Empresa empresaB, int nRatingValues, boolean compradores) {
@@ -56,16 +57,16 @@ public class RatingCountMatrixWaisoEmpresa extends RatingCountMatrixWaiso implem
 	 * Populates matrix using ratings for produtos that the two empresas share.
 	 */
 	private void calculate(Empresa empresaA, Empresa empresaB) {
-		Collection<Compra> compras = compradores ? empresaA.getAllComprasCompra() : empresaA.getAllComprasVenda(); 
+		Collection<List<Compra>> compras = compradores ? empresaA.getAllComprasCompra() : empresaA.getAllComprasVenda(); 
 		 
-		for (Compra compraByA : compras) {
+		for (List<Compra> compraByA : compras) {
 
-			Compra ratingByB = compradores ? empresaB.getProdutoCompraByCompra(compraByA.getProdutoId()) : empresaB.getProdutoCompraByVenda(compraByA.getProdutoId());
+			List<Compra> ratingByB = compradores ? empresaB.getProdutoCompraByCompra(compraByA.get(0).getProdutoId()) : empresaB.getProdutoCompraByVenda(compraByA.get(0).getProdutoId());
 
 			if (ratingByB != null) {
 
-				int i = compraByA.getPontuacao() - 1;
-				int j = ratingByB.getPontuacao() - 1;
+				int i = (int)RatingWaiso.avarageRating(compraByA) - 1;
+				int j = (int)RatingWaiso.avarageRating(ratingByB) - 1;
 				matrix[i][j]++;
 			}
 		}
